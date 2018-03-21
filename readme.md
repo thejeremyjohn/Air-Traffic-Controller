@@ -1,5 +1,3 @@
-## Sample JS Project Proposal: Conway's Game of Life with Variations
-
 ### Background
 
 Air Traffic Controller is based on the existing mobile title Air Control. The game allows 1-player interactions with a rectangular board. 2D-shapes (airplanes with circular collision boxes) move in from outside the board, approaching in a straight line from some random vector. Some planes travel faster than others and/or have a different size.
