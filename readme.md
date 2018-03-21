@@ -14,7 +14,7 @@ A plane will begin following a route as soon as it is clicked upon. Players shou
 
 ### Functionality & MVP
 
-With this Conway's Game of Life simulator, users will be able to:
+Players will be able to:
 
 - [ ] Play and Pause
 - [ ] Click and drag to draw routes for planes
