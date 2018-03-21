@@ -26,7 +26,7 @@ In addition, this project will include:
 
 ### Wireframes
 
-This app will consist of a single screen with game board, game controls, and nav links to my Github and LinkedIn. Game controls will include Play and Pause buttons as well click&drag to draw plane routes.
+This app will consist of a single screen with game board, game controls, and nav links to my Github and LinkedIn. Game controls will include `play`, `pause`, and `click&drag` to draw plane routes.
 
 ![wireframes](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/air_traffic_controller.png)
 
