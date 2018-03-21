@@ -8,7 +8,7 @@ Planes cannot land themselves even if their random approach vector happens to ta
 
 ### Additional Details
 
-A plane will begin following a route as soon as it is clicked upon. Players should not be able to hold a plane in one spot, however they can make unrealistically tight spirals to keep a plane in the same area for a while. When a plane reaches the end of a route which does not collide with a landing area, the plane will continue in a straight light from it's most recent vector.
+A plane will begin following a route as soon as it is clicked upon. Players should not be able to hold a plane in one spot, however they can make unrealistically tight spirals to keep a plane in the same area for a while. When a plane reaches the end of a route which does not collide with a landing area, the plane will continue in a straight line from it's most recent vector.
 
 ### Functionality & MVP
 
