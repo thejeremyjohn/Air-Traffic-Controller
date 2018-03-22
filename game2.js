@@ -32,6 +32,7 @@ function draw(context,x,y,size) {
 // only mousedown on plane element begins routing
 // route resets to null on mousedown
 var route;
+var routeCopy;
 var mousedown = false;
 var move;
 // plane.addEventListener("mousedown", () => {
@@ -40,6 +41,7 @@ canvas.addEventListener("mousedown", () => {
   clearInterval(move);
   clearInterval(defaultMove);
   route = null;
+  routeCopy = null;
 });
 canvas.addEventListener("mouseup", () => {
   if (mousedown) {
@@ -47,16 +49,15 @@ canvas.addEventListener("mouseup", () => {
     lastY = 0;
     mousedown = false;
     console.log(route);
-    var i = 0;
     if (route) {
       move = setInterval(function() {
-        if ( i === route.length ) {
+        if ( route.length===0 ) {
           clearInterval(move);
 
-          const x1 = route[i-5].x;
-          const y1 = route[i-5].y;
-          const x2 = route[i-1].x;
-          const y2 = route[i-1].y;
+          const x1 = routeCopy[routeCopy.length-5].x;
+          const y1 = routeCopy[routeCopy.length-5].y;
+          const x2 = routeCopy[routeCopy.length-1].x;
+          const y2 = routeCopy[routeCopy.length-1].y;
 
           const dx = x2 < x1 ? -1 : 1;
           const dy = y2 < y1 ? -1 : 1;
@@ -65,19 +66,16 @@ canvas.addEventListener("mouseup", () => {
           console.log(`x2 = ${x2} | y2 = ${y2}`);
           console.log(`dx = ${dx} | dy = ${dy}`);
 
-          const {x,y} = route[i-1];
+          const {x,y} = routeCopy[routeCopy.length-1];
           beginDefaultMove(x,y,dx,dy);
-          i = 0;
           route = null;
         } else {
-          const {x,y} = route[i];
+          const {x,y} = route.shift();
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          // route.map( rxy => {
-          //   const {rx,ry} = rxy;
-          //   draw(ctx,rx,ry,2);
-          // });
+          route.map( r => {
+            draw(ctx,r.x,r.y,2);
+          });
           ctx.drawImage(plane, x-25, y-25, 50, 50);
-          i++;
         }
       }, 50);
     }
@@ -94,6 +92,7 @@ function recMousePos(e) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!route) route = [];
     route.push({ x: xPos, y: yPos });
+    routeCopy = route.slice();
     route.map( xy => {
       const {x,y} = xy;
       draw(ctx,x,y,2);
@@ -106,7 +105,7 @@ function beginDefaultMove(x, y, dx, dy) {
     x += dx;
     y += dy;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    console.log('clearRect was called');
+    // console.log('clearRect was called');
     ctx.drawImage(plane, x-25, y-25, 50, 50);
   }, 50);
 }
