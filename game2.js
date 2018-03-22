@@ -1,7 +1,36 @@
 var plane = document.querySelector("#plane");
-var container = document.querySelector("#contentContainer");
+// var container = document.querySelector("#contentContainer");
 document.addEventListener('DOMContentLoaded', beginDefaultMove(0,0,1,1));
 window.ondragstart = function() { return false; };
+
+var canvas = document.getElementById("contentContainer");
+var ctx = canvas.getContext("2d");
+// ctx.moveTo(0,0);
+// ctx.lineTo(200,100);
+ctx.strokeStyle='white';
+// ctx.stroke();
+
+ctx.drawImage(plane, 10, 10, 50, 50);
+
+var lastX, lastY;
+function draw(ctx,x,y,size) {
+    if (lastX && lastY && (x !== lastX || y !== lastY)) {
+        ctx.fillStyle = "#000000";
+        ctx.lineWidth = 2 * size;
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+  ctx.fillStyle = "#000000";
+  ctx.beginPath();
+  ctx.arc(x, y, size, 0, Math.PI*2, true);
+  ctx.closePath();
+  ctx.fill();
+  lastX = x;
+  lastY = y;
+}
+
 
 // plane moves in a straight line by default
 // and plane continues in a straight line after route *kinda*
@@ -10,14 +39,17 @@ window.ondragstart = function() { return false; };
 var route;
 var mousedown = false;
 var move;
-plane.addEventListener("mousedown", () => {
+// plane.addEventListener("mousedown", () => {
+canvas.addEventListener("mousedown", () => {
   mousedown = true;
   clearInterval(move);
   clearInterval(defaultMove);
   route = null;
 });
-container.addEventListener("mouseup", () => {
+canvas.addEventListener("mouseup", () => {
   if (mousedown) {
+    lastX = 0;
+    lastY = 0;
     mousedown = false;
     console.log(route);
     var i = 0;
@@ -44,29 +76,54 @@ container.addEventListener("mouseup", () => {
           route = null;
         } else {
           const {x,y} = route[i];
-          plane.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+          // plane.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+          ctx.drawImage(plane, x-25, y-25, 50, 50);
           i++;
         }
       }, 50);
     }
   }
 });
-container.addEventListener("mousemove", recMousePos);
+canvas.addEventListener("mousemove", recMousePos);
 function recMousePos(e) {
   if (mousedown) {
     const parentPos = getPosition(e.currentTarget);
-    const xPos = e.clientX - parentPos.x - (plane.clientWidth / 2);
-    const yPos = e.clientY - parentPos.y - (plane.clientHeight / 2);
+    // const xPos = e.clientX - parentPos.x - (plane.clientWidth / 2);
+    // const yPos = e.clientY - parentPos.y - (plane.clientHeight / 2);
+    const xPos = e.clientX - parentPos.x;
+    const yPos = e.clientY - parentPos.y;
+    // getMousePos(e);
+    // const xPos = mouseX;
+    // const yPos = mouseY;
+    // const xPos = e.layerX;
+    // const yPos = e.layerY;
+    draw(ctx,xPos,yPos,2);
+    // ctx.clearRect(0, 0, canvas.width, canvas.height)
     if (!route) route = [];
     route.push({ x: xPos, y: yPos });
   }
 }
+// function getMousePos(e) {
+//   if (!e)
+//       var e = event;
+//   if (e.offsetX) {
+//       mouseX = e.offsetX;
+//       mouseY = e.offsetY;
+//   }
+//   else if (e.layerX) {
+//       mouseX = e.layerX;
+//       mouseY = e.layerY;
+//   }
+//  }
+
+
 var defaultMove;
 function beginDefaultMove(x, y, dx, dy) {
   defaultMove = setInterval(function() {
     x += dx;
     y += dy;
-    plane.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    // plane.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    ctx.drawImage(plane, x-25, y-25, 50, 50);
   }, 50);
 }
 
