@@ -1,36 +1,31 @@
 var plane = document.querySelector("#plane");
-// var container = document.querySelector("#contentContainer");
 document.addEventListener('DOMContentLoaded', beginDefaultMove(0,0,1,1));
 window.ondragstart = function() { return false; };
 
 var canvas = document.getElementById("contentContainer");
 var ctx = canvas.getContext("2d");
-// ctx.moveTo(0,0);
-// ctx.lineTo(200,100);
 ctx.strokeStyle='white';
-// ctx.stroke();
 
-ctx.drawImage(plane, 10, 10, 50, 50);
+// ctx.drawImage(plane, 10, 10, 50, 50);
 
 var lastX, lastY;
-function draw(ctx,x,y,size) {
-    if (lastX && lastY && (x !== lastX || y !== lastY)) {
-        ctx.fillStyle = "#000000";
-        ctx.lineWidth = 2 * size;
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-    }
-  ctx.fillStyle = "#000000";
-  ctx.beginPath();
-  ctx.arc(x, y, size, 0, Math.PI*2, true);
-  ctx.closePath();
-  ctx.fill();
+function draw(context,x,y,size) {
+  if (lastX && lastY && (x !== lastX || y !== lastY)) {
+      context.fillStyle = "#000000";
+      context.lineWidth = 2 * size;
+      context.beginPath();
+      // context.moveTo(lastX, lastY);
+      context.lineTo(x, y);
+      context.stroke();
+  }
+  context.fillStyle = "#000000";
+  context.beginPath();
+  context.arc(x, y, size, 0, Math.PI*2, true);
+  context.closePath();
+  context.fill();
   lastX = x;
   lastY = y;
 }
-
 
 // plane moves in a straight line by default
 // and plane continues in a straight line after route *kinda*
@@ -76,7 +71,11 @@ canvas.addEventListener("mouseup", () => {
           route = null;
         } else {
           const {x,y} = route[i];
-          // plane.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          // route.map( rxy => {
+          //   const {rx,ry} = rxy;
+          //   draw(ctx,rx,ry,2);
+          // });
           ctx.drawImage(plane, x-25, y-25, 50, 50);
           i++;
         }
@@ -92,37 +91,22 @@ function recMousePos(e) {
     // const yPos = e.clientY - parentPos.y - (plane.clientHeight / 2);
     const xPos = e.clientX - parentPos.x;
     const yPos = e.clientY - parentPos.y;
-    // getMousePos(e);
-    // const xPos = mouseX;
-    // const yPos = mouseY;
-    // const xPos = e.layerX;
-    // const yPos = e.layerY;
-    draw(ctx,xPos,yPos,2);
-    // ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     if (!route) route = [];
     route.push({ x: xPos, y: yPos });
+    route.map( xy => {
+      const {x,y} = xy;
+      draw(ctx,x,y,2);
+    });
   }
 }
-// function getMousePos(e) {
-//   if (!e)
-//       var e = event;
-//   if (e.offsetX) {
-//       mouseX = e.offsetX;
-//       mouseY = e.offsetY;
-//   }
-//   else if (e.layerX) {
-//       mouseX = e.layerX;
-//       mouseY = e.layerY;
-//   }
-//  }
-
-
 var defaultMove;
 function beginDefaultMove(x, y, dx, dy) {
   defaultMove = setInterval(function() {
     x += dx;
     y += dy;
-    // plane.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    console.log('clearRect was called');
     ctx.drawImage(plane, x-25, y-25, 50, 50);
   }, 50);
 }
