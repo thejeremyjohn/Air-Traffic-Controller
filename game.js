@@ -1,28 +1,36 @@
 var plane = document.querySelector("#plane");
 var container = document.querySelector("#contentContainer");
+window.ondragstart = function() { return false; };
 
-// plane follows route omg !!!
-var route = [];
+// only mousedown on plane element begins routing
+// route resets to null on mousedown
+var route;
 var mousedown = false;
 var move;
-container.addEventListener("mousedown", () => {
+plane.addEventListener("mousedown", () => {
   mousedown = true;
+  clearInterval(move);
+  route = null;
 });
 container.addEventListener("mouseup", () => {
-  mousedown = false;
-  console.log(route);
-  var i = 0;
-  move = setInterval(function() {
-    if ( i >= route.length-1 ) {
-      clearInterval(move);
-      i = 0;
-      route = [];
-    } else {
-      const translation = `translate3d(${route[i].x}px, ${route[i].y}px, 0)`;
-      plane.style.transform = translation;
-      i++;
+  if (mousedown) {
+    mousedown = false;
+    console.log(route);
+    var i = 0;
+    if (route) {
+      move = setInterval(function() {
+        if ( i >= route.length-1 ) {
+          clearInterval(move);
+          i = 0;
+          route = null;
+        } else {
+          let translation = `translate3d(${route[i].x}px, ${route[i].y}px, 0)`;
+          plane.style.transform = translation;
+          i++;
+        }
+      }, 50);
     }
-  }, 100);
+  }
 });
 container.addEventListener("mousemove", recMousePos);
 function recMousePos(e) {
@@ -30,9 +38,43 @@ function recMousePos(e) {
     const parentPos = getPosition(e.currentTarget);
     const xPos = e.clientX - parentPos.x - (plane.clientWidth / 2);
     const yPos = e.clientY - parentPos.y - (plane.clientHeight / 2);
+    if (!route) route = [];
     route.push({ x: xPos, y: yPos });
   }
 }
+
+// // plane follows route omg !!!
+// var route = [];
+// var mousedown = false;
+// var move;
+// container.addEventListener("mousedown", () => {
+//   mousedown = true;
+// });
+// container.addEventListener("mouseup", () => {
+//   mousedown = false;
+//   console.log(route);
+//   var i = 0;
+//   move = setInterval(function() {
+//     if ( i >= route.length-1 ) {
+//       clearInterval(move);
+//       i = 0;
+//       route = [];
+//     } else {
+//       const translation = `translate3d(${route[i].x}px, ${route[i].y}px, 0)`;
+//       plane.style.transform = translation;
+//       i++;
+//     }
+//   }, 100);
+// });
+// container.addEventListener("mousemove", recMousePos);
+// function recMousePos(e) {
+//   if (mousedown) {
+//     const parentPos = getPosition(e.currentTarget);
+//     const xPos = e.clientX - parentPos.x - (plane.clientWidth / 2);
+//     const yPos = e.clientY - parentPos.y - (plane.clientHeight / 2);
+//     route.push({ x: xPos, y: yPos });
+//   }
+// }
 
 // // when mousedown and mousemove, store current mouse pos in route array
 // // when mouseup, log route and reset route
