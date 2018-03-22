@@ -12,7 +12,7 @@ body {
 }
 #plane {
     position: relative;
-    transition: transform .5s linear;
+    transition: transform .10s linear;
     width: 50px;
     height: auto;
 }

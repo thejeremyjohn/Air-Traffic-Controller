@@ -1,29 +1,28 @@
 var plane = document.querySelector("#plane");
 var container = document.querySelector("#contentContainer");
 
-
+// plane follows route omg !!!
 var route = [];
 var mousedown = false;
 var move;
-var i = 0;
 container.addEventListener("mousedown", () => {
   mousedown = true;
 });
 container.addEventListener("mouseup", () => {
   mousedown = false;
   console.log(route);
+  var i = 0;
   move = setInterval(function() {
     if ( i >= route.length-1 ) {
       clearInterval(move);
+      i = 0;
+      route = [];
     } else {
-      console.log('excuse ME!?');
-      console.log(i);
-      // plane.style.transform = `translate3d(${route[i].x}px, ${route[i].y}px, 0)`;
+      const translation = `translate3d(${route[i].x}px, ${route[i].y}px, 0)`;
+      plane.style.transform = translation;
       i++;
     }
-  }, 200);
-  // plane.style.transform = `translate3d(${route[0].x}px, ${route[0].y}px, 0)`;
-  route = []; // really, this should happen when the plane finishes route
+  }, 100);
 });
 container.addEventListener("mousemove", recMousePos);
 function recMousePos(e) {
@@ -32,7 +31,6 @@ function recMousePos(e) {
     const xPos = e.clientX - parentPos.x - (plane.clientWidth / 2);
     const yPos = e.clientY - parentPos.y - (plane.clientHeight / 2);
     route.push({ x: xPos, y: yPos });
-    // console.log(`${xPos}, ${yPos}`);
   }
 }
 
