@@ -1,5 +1,3 @@
-## Sample JS Project Proposal: Conway's Game of Life with Variations
-
 ### Background
 
 Air Traffic Controller is based on the existing mobile title Air Control. The game allows 1-player interactions with a rectangular board. 2D-shapes (airplanes with circular collision boxes) move in from outside the board, approaching in a straight line from some random vector. Some planes travel faster than others and/or have a different size.
@@ -10,7 +8,7 @@ Planes cannot land themselves even if their random approach vector happens to ta
 
 ### Additional Details
 
-A plane will begin following a route as soon as it is clicked upon. Players should not be able to hold a plane in one spot, however they can make unrealistically tight spirals to keep a plane in the same area for a while. When a plane reaches the end of a route which does not collide with a landing area, the plane will continue in a straight light from it's most recent vector.
+A plane will begin following a route as soon as it is clicked upon. Players should not be able to hold a plane in one spot, however they can make unrealistically tight spirals to keep a plane in the same area for a while. When a plane reaches the end of a route which does not collide with a landing area, the plane will continue in a straight line from it's most recent vector.
 
 ### Functionality & MVP
 
@@ -26,7 +24,7 @@ In addition, this project will include:
 
 ### Wireframes
 
-This app will consist of a single screen with game board, game controls, and nav links to my Github and LinkedIn. Game controls will include Play and Pause buttons as well click&drag to draw plane routes.
+This app will consist of a single screen with game board, game controls, and nav links to my Github and LinkedIn. Game controls will include `play`, `pause`, and `click&drag` to draw plane routes.
 
 ![wireframes](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/air_traffic_controller.png)
 
