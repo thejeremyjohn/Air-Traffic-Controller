@@ -1,3 +1,7 @@
+// var plane = {
+//   img: document.querySelector("#plane"),
+//   x: 0, y: 0
+// };
 var plane = document.querySelector("#plane");
 document.addEventListener('DOMContentLoaded', beginDefaultMove(0,0,1,1));
 // window.ondragstart = function() { return false; };
@@ -77,14 +81,18 @@ function movePlane() {
         } else {
           const {x,y} = route.shift();
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          route.map( r => {
-            draw(ctx,r.x,r.y,2);
-          });
+          drawRoute(ctx, route);
           ctx.drawImage(plane, x-25, y-25, 50, 50);
         }
       }, 50);
     }
   }
+}
+
+function drawRoute(_ctx, _route) {
+  _route.map( r => {
+    draw(ctx, r.x, r.y, 2);
+  });
 }
 
 function recMousePos(e) {
@@ -98,10 +106,7 @@ function recMousePos(e) {
     if (!route) route = [];
     route.push({ x: xPos, y: yPos });
     routeCopy = route.slice();
-    route.map( xy => {
-      const {x,y} = xy;
-      draw(ctx,x,y,2);
-    });
+    drawRoute(ctx, route);
   }
 }
 
