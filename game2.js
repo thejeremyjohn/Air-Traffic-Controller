@@ -1,11 +1,14 @@
 var plane = document.querySelector("#plane");
 document.addEventListener('DOMContentLoaded', beginDefaultMove(0,0,1,1));
-window.ondragstart = function() { return false; };
+// window.ondragstart = function() { return false; };
 
 var canvas = document.getElementById("contentContainer");
 var ctx = canvas.getContext("2d");
 ctx.strokeStyle='white';
-
+// plane.addEventListener("mousedown", mousedownReset);
+canvas.addEventListener("mousedown", mousedownReset);
+canvas.addEventListener("mouseup", movePlane);
+canvas.addEventListener("mousemove", recMousePos);
 // ctx.drawImage(plane, 10, 10, 50, 50);
 
 var lastX, lastY;
@@ -35,15 +38,17 @@ var route;
 var routeCopy;
 var mousedown = false;
 var move;
-// plane.addEventListener("mousedown", () => {
-canvas.addEventListener("mousedown", () => {
+var defaultMove;
+
+function mousedownReset() {
   mousedown = true;
   clearInterval(move);
   clearInterval(defaultMove);
   route = null;
   routeCopy = null;
-});
-canvas.addEventListener("mouseup", () => {
+}
+
+function movePlane() {
   if (mousedown) {
     lastX = 0;
     lastY = 0;
@@ -80,8 +85,8 @@ canvas.addEventListener("mouseup", () => {
       }, 50);
     }
   }
-});
-canvas.addEventListener("mousemove", recMousePos);
+}
+
 function recMousePos(e) {
   if (mousedown) {
     const parentPos = getPosition(e.currentTarget);
@@ -99,13 +104,12 @@ function recMousePos(e) {
     });
   }
 }
-var defaultMove;
+
 function beginDefaultMove(x, y, dx, dy) {
   defaultMove = setInterval(function() {
     x += dx;
     y += dy;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // console.log('clearRect was called');
     ctx.drawImage(plane, x-25, y-25, 50, 50);
   }, 50);
 }
