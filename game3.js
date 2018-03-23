@@ -1,3 +1,5 @@
+const _plane = require("./plane");
+
 var planeObj, canvas, ctx;
 document.addEventListener('DOMContentLoaded', () => {
   const plane = new Image(50, 50);
