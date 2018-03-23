@@ -16,7 +16,7 @@ body {
 }
 */
 #plane {
-  position: relative;
+  /* position: relative; */
   /* bottom: 50px;
   right: 50px; */
   /* transition: transform .10s linear; */

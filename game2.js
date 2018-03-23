@@ -1,29 +1,37 @@
-// var plane = {
-//   img: document.querySelector("#plane"),
-//   x: 0, y: 0
-// };
-var plane = document.querySelector("#plane");
-document.addEventListener('DOMContentLoaded', beginDefaultMove(0,0,1,1));
+// var plane = document.querySelector("#plane");
+var planeObj, canvas, ctx;
+document.addEventListener('DOMContentLoaded', () => {
+  const plane = new Image(50, 50);
+  plane.src = "Without Source files -Game Assets/JU-87B2/Type_3/JU87B2 -progress_5.png";
+  plane.onload = () => {
+    planeObj = { plane, px: 0, py: 0 };
+    // console.log(planeObj);
+    canvas = document.getElementById("contentContainer");
+    ctx = canvas.getContext("2d");
+    ctx.strokeStyle='white';
+    ctx.drawImage(planeObj.plane, planeObj.px, planeObj.py, 50, 50);
+    canvas.addEventListener("mousedown", mousedownReset);
+    canvas.addEventListener("mouseup", movePlane);
+    canvas.addEventListener("mousemove", recMousePos);
+  };
+  beginDefaultMove(1, 1);
+
+  console.log('DOM loaded');
+});
 // window.ondragstart = function() { return false; };
 
-var canvas = document.getElementById("contentContainer");
-var ctx = canvas.getContext("2d");
-ctx.strokeStyle='white';
 // plane.addEventListener("mousedown", mousedownReset);
-canvas.addEventListener("mousedown", mousedownReset);
-canvas.addEventListener("mouseup", movePlane);
-canvas.addEventListener("mousemove", recMousePos);
-// ctx.drawImage(plane, 10, 10, 50, 50);
+// ctx.drawImage(planeObj.plane, planeObj.px, planeObj.py, 50, 50);
 
 var lastX, lastY;
 function draw(context,x,y,size) {
   if (lastX && lastY && (x !== lastX || y !== lastY)) {
-      context.fillStyle = "#000000";
-      context.lineWidth = 2 * size;
-      context.beginPath();
-      // context.moveTo(lastX, lastY);
-      context.lineTo(x, y);
-      context.stroke();
+    context.fillStyle = "#000000";
+    context.lineWidth = 2 * size;
+    context.beginPath();
+    // context.moveTo(lastX, lastY);
+    context.lineTo(x, y);
+    context.stroke();
   }
   context.fillStyle = "#000000";
   context.beginPath();
@@ -44,12 +52,18 @@ var mousedown = false;
 var move;
 var defaultMove;
 
-function mousedownReset() {
-  mousedown = true;
-  clearInterval(move);
-  clearInterval(defaultMove);
-  route = null;
-  routeCopy = null;
+function mousedownReset(e) {
+  const { x, y } = getMousePos(e);
+  console.log(planeObj.plane.width);
+  console.log(`mousedown @ ${x}, ${y}`);
+  const { plane, px, py } = planeObj;
+  if ( Math.abs(x-px) < (plane.width/2) && Math.abs(y-py) < (plane.width/2) ) {
+    mousedown = true;
+    clearInterval(move);
+    clearInterval(defaultMove);
+    route = null;
+    routeCopy = null;
+  }
 }
 
 function movePlane() {
@@ -76,13 +90,19 @@ function movePlane() {
           console.log(`dx = ${dx} | dy = ${dy}`);
 
           const {x,y} = routeCopy[routeCopy.length-1];
-          beginDefaultMove(x,y,dx,dy);
+          planeObj.px = x;
+          planeObj.py = y;
+          beginDefaultMove(dx,dy);
           route = null;
         } else {
           const {x,y} = route.shift();
+          planeObj.px = x;
+          planeObj.py = y;
           ctx.clearRect(0, 0, canvas.width, canvas.height);
+          let { plane, px, py } = planeObj;
+          ctx.drawImage(plane, px-(plane.width/2), py-(plane.width/2), 50, 50);
           drawRoute(ctx, route);
-          ctx.drawImage(plane, x-25, y-25, 50, 50);
+          console.log(planeObj);
         }
       }, 50);
     }
@@ -95,6 +115,13 @@ function drawRoute(_ctx, _route) {
   });
 }
 
+function getMousePos(e) {
+  const parentPos = getPosition(e.currentTarget);
+  const x = e.clientX - parentPos.x;
+  const y = e.clientY - parentPos.y;
+  return { x, y };
+}
+
 function recMousePos(e) {
   if (mousedown) {
     const parentPos = getPosition(e.currentTarget);
@@ -103,6 +130,10 @@ function recMousePos(e) {
     const xPos = e.clientX - parentPos.x;
     const yPos = e.clientY - parentPos.y;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let { plane, px, py } = planeObj;
+    ctx.drawImage(plane, px-(plane.width/2), py-(plane.width/2), 50, 50);
+
     if (!route) route = [];
     route.push({ x: xPos, y: yPos });
     routeCopy = route.slice();
@@ -110,12 +141,15 @@ function recMousePos(e) {
   }
 }
 
-function beginDefaultMove(x, y, dx, dy) {
+function beginDefaultMove(dx, dy) {
   defaultMove = setInterval(function() {
-    x += dx;
-    y += dy;
+    // console.log('moving');
+    planeObj.px += dx;
+    planeObj.py += dy;
+    // console.log(planeObj);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(plane, x-25, y-25, 50, 50);
+    let { plane, px, py } = planeObj;
+    ctx.drawImage(plane, px-(plane.width/2), py-(plane.width/2), 50, 50);
   }, 50);
 }
 
@@ -229,8 +263,5 @@ function getPosition(el) {
     }
     el = el.offsetParent;
   }
-  return {
-    x: xPos,
-    y: yPos
-  };
+  return { x: xPos, y: yPos };
 }
