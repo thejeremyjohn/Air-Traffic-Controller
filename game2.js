@@ -1,11 +1,9 @@
-// var plane = document.querySelector("#plane");
 var planeObj, canvas, ctx;
 document.addEventListener('DOMContentLoaded', () => {
   const plane = new Image(50, 50);
   plane.src = "Without Source files -Game Assets/JU-87B2/Type_3/JU87B2 -progress_5.png";
   plane.onload = () => {
     planeObj = { plane, px: 0, py: 0 };
-    // console.log(planeObj);
     canvas = document.getElementById("contentContainer");
     ctx = canvas.getContext("2d");
     ctx.strokeStyle='white';
@@ -18,10 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   console.log('DOM loaded');
 });
-// window.ondragstart = function() { return false; };
-
-// plane.addEventListener("mousedown", mousedownReset);
-// ctx.drawImage(planeObj.plane, planeObj.px, planeObj.py, 50, 50);
 
 var lastX, lastY;
 function draw(context,x,y,size) {
@@ -153,98 +147,6 @@ function beginDefaultMove(dx, dy) {
   }, 50);
 }
 
-// // plane follows route omg !!!
-// var route = [];
-// var mousedown = false;
-// var move;
-// container.addEventListener("mousedown", () => {
-//   mousedown = true;
-// });
-// container.addEventListener("mouseup", () => {
-//   mousedown = false;
-//   console.log(route);
-//   var i = 0;
-//   move = setInterval(function() {
-//     if ( i >= route.length-1 ) {
-//       clearInterval(move);
-//       i = 0;
-//       route = [];
-//     } else {
-//       const translation = `translate3d(${route[i].x}px, ${route[i].y}px, 0)`;
-//       plane.style.transform = translation;
-//       i++;
-//     }
-//   }, 100);
-// });
-// container.addEventListener("mousemove", recMousePos);
-// function recMousePos(e) {
-//   if (mousedown) {
-//     const parentPos = getPosition(e.currentTarget);
-//     const xPos = e.clientX - parentPos.x - (plane.clientWidth / 2);
-//     const yPos = e.clientY - parentPos.y - (plane.clientHeight / 2);
-//     route.push({ x: xPos, y: yPos });
-//   }
-// }
-
-// // when mousedown and mousemove, store current mouse pos in route array
-// // when mouseup, log route and reset route
-// var route = [];
-// var mousedown = false;
-// container.addEventListener("mousedown", () => {
-//   mousedown = true;
-// });
-// container.addEventListener("mouseup", () => {
-//   mousedown = false;
-//   console.log(route);
-//   route = []; // really, this should happen when the plane finishes route
-// });
-// container.addEventListener("mousemove", recMousePos);
-// function recMousePos(e) {
-//   if (mousedown) {
-//     const parentPos = getPosition(e.currentTarget);
-//     const xPos = e.clientX - parentPos.x - (plane.clientWidth / 2);
-//     const yPos = e.clientY - parentPos.y - (plane.clientHeight / 2);
-//     route.push({ x: xPos, y: yPos });
-//     // console.log(`${xPos}, ${yPos}`);
-//   }
-// }
-
-// // when mousedown, inner html===true
-// // when mouseup, inner html===false
-// var mousedown = false;
-// container.innerHTML = mousedown;
-// container.addEventListener("mousedown", () => {
-//   mousedown = true;
-//   container.innerHTML = mousedown;
-// });
-// container.addEventListener("mouseup", () => {
-//   mousedown = false;
-//   container.innerHTML = mousedown;
-// });
-
-// // when mousedown, stores number in an array at regular intervals
-// // array elements do not persist after mouse up
-// var count = 0;
-// var timer;
-// container.addEventListener("mousedown", () => {
-//   const nums = [];
-//   timer=setInterval(function(){
-//     nums.push(count++);
-//     container.innerHTML = nums;
-//   }, 200);
-// });
-// container.addEventListener("mouseup", () => {
-//     if (timer) clearInterval(timer);
-// });
-
-// // sprite will move to click position
-// container.addEventListener("mousedown", getClickPosition);
-// function getClickPosition(e) {
-//   const parentPos = getPosition(e.currentTarget);
-//   const xPos = e.clientX - parentPos.x - (plane.clientWidth / 2);
-//   const yPos = e.clientY - parentPos.y - (plane.clientHeight / 2);
-//   plane.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
-// }
 // Helper function to get an element's exact position
 function getPosition(el) {
   var xPos = 0;
