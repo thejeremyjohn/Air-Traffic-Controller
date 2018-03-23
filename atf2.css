@@ -3,18 +3,18 @@ body {
   margin: 30px;
   margin-top: 10px;
 }
-/*
+
 #content-main {
   display: flex;
   justify-content: center;
 }
-#spawn-area {
+/* #spawn-area {
   box-sizing: border-box;
   width: 700px;
   height: 500px;
   border: 5px grey solid;
-}
-*/
+} */
+
 #plane {
   /* position: relative; */
   /* bottom: 50px;

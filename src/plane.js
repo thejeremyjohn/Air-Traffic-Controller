@@ -8,7 +8,6 @@ class Plane {
     this.route = options.route;
     this.speed = options.speed;
   }
-
   draw(ctx) {
     // draw the actual plane
     // ctx.drawImage(plane, px-(plane.width/2), py-(plane.width/2), 50, 50);
@@ -23,20 +22,18 @@ class Plane {
         let b = this.route[i];
         // context.fillStyle = "#000000";
         // context.lineWidth = 2;
-        context.beginPath();
-        context.moveTo(a.x, a.y);
-        context.lineTo(b.x, b.y);
-        context.stroke();
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.stroke();
       }
     }
   }
-
   activeMove() {
     const { x, y } = this.route.shift();
     this.x = x;
     this.y = y;
   }
-
   passiveMove() {
     // will build this out later
     this.x += 1;

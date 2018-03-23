@@ -1,7 +1,7 @@
 var planeObj, canvas, ctx;
 document.addEventListener('DOMContentLoaded', () => {
   const plane = new Image(50, 50);
-  plane.src = "Without Source files -Game Assets/JU-87B2/Type_3/JU87B2 -progress_5.png";
+  plane.src = "../Without Source files -Game Assets/JU-87B2/Type_3/JU87B2 -progress_5.png";
   plane.onload = () => {
     planeObj = { plane, px: 0, py: 0 };
     canvas = document.getElementById("contentContainer");
@@ -34,7 +34,7 @@ function drawRoute(context, _route) {
 // route resets to null on mousedown
 var route;
 var routeCopy;
-var mousedown = false;
+var mousedown;
 var move;
 var defaultMove;
 
