@@ -4,39 +4,71 @@ function tick() {
     iTick++;
     // console.log(iTick);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    p1.draw(ctx);
-    if ( p1.route.length >= 2 ) {
-      if ( iTick%3===0 ) p1.activeMove();
-    }
-    else {
-      p1.passiveMove();
-    }
-    // console.log(`route.length = ${p1.route.length}`);
-    // console.log(p1.route);
+    planes.forEach( plane => {
+      plane.draw(ctx);
+      if ( plane.route.length >= 2 ) {
+        if ( iTick%5===0 ) plane.activeMove();
+      }
+      else {
+        plane.passiveMove();
+      }
+
+    });
   }
   requestAnimationFrame(tick);
 }
 requestAnimationFrame(tick);
+
+var ready, activePlane, move, defaultMove, canvas, ctx, planes;
+document.addEventListener('DOMContentLoaded', () => {
+  const img = new Image(50, 50);
+  img.src = "../awesome-face-png-1.png";
+  img.onload = () => {
+    // let plane = new Plane({ img, x:-50, y:-50, route:[], speed:1 });
+    // let plane2 = new Plane({ img, x:50, y:50, route:[], speed:1 });
+    // planes = [plane, plane2];
+    planes = spawnPlanes(3, img);
+    canvas = document.getElementById("contentContainer");
+    ctx = canvas.getContext("2d");
+    canvas.addEventListener("mousedown", mousedownReset);
+    canvas.addEventListener("mouseup", () => ( activePlane = null ));
+    canvas.addEventListener("mousemove", recMousePos);
+    ready = true;
+  };
+});
+
+function randFromRange(min, max) {
+  return Math.floor(Math.random() * (max - min) + min);
+}
+function spawnPlanes(n, img) {
+  const planesArr = [];
+  for (var i = 0; i < n; i++) {
+    const x = randFromRange(-50, 0);
+    const y = randFromRange(-50, 0);
+    planesArr.push( new Plane({ img, x, y }) );
+  }
+  return planesArr;
+}
 
 class Plane {
   constructor(options) {
     this.img = options.img;
     this.x = options.x;
     this.y = options.y;
-    this.route = options.route;
-    this.speed = options.speed;
+    this.route = [];
+    this.speed = options.speed || 1;
   }
   draw(ctx) {
-    // draw the actual plane
     ctx.drawImage(
       this.img,
       this.x-(this.img.width/2),
       this.y-(this.img.height/2),
       this.img.width, this.img.height
     );
-    // draw its route
     if ( this.route.length >= 2 ) {
       for (var i = 1; i < this.route.length; i++) {
+        ctx.strokeStyle='orange';
+        ctx.lineWidth = 3;
         let a = this.route[i-1];
         let b = this.route[i];
         ctx.beginPath();
@@ -58,36 +90,15 @@ class Plane {
   }
 }
 
-var ready, mousedown, move, defaultMove, canvas, ctx, p1, planes;
-document.addEventListener('DOMContentLoaded', () => {
-  const img = new Image(50, 50);
-  img.src = "../Without Source files -Game Assets/JU-87B2/Type_3/JU87B2 -progress_5.png";
-  img.onload = () => {
-    // console.log('img loaded');
-    p1 = new Plane({ img, x:0, y:0, route:[], speed:1 });
-    // planes = [p1];
-    canvas = document.getElementById("contentContainer");
-    ctx = canvas.getContext("2d");
-    ctx.strokeStyle='white';
-    canvas.addEventListener("mousedown", mousedownReset);
-    canvas.addEventListener("mouseup", () => ( mousedown = false ));
-    canvas.addEventListener("mousemove", recMousePos);
-    ready = true;
-  };
-});
-
-// plane moves in a straight line by default
-// and plane continues in a straight line after route *kinda*
-// only mousedown on plane element begins routing
-// route resets to null on mousedown
-
 function mousedownReset(e) {
   const { x, y } = getMousePos(e);
   console.log(`mousedown @ ${x}, ${y}`);
-  if ( Math.abs(x-p1.x) < (p1.img.width/2) && Math.abs(y-p1.y) < (p1.img.width/2) ) {
-    mousedown = true;
-    // p1.route = [];
-  }
+  planes.forEach( plane => {
+    if ( Math.abs(x-plane.x) < (plane.img.width/2) && Math.abs(y-plane.y) < (plane.img.width/2) ) {
+      activePlane = plane;
+      plane.route = [];
+    }
+  });
 }
 
 function getMousePos(e) {
@@ -98,8 +109,8 @@ function getMousePos(e) {
 }
 
 function recMousePos(e) {
-  if (mousedown) {
-    p1.route.push( getMousePos(e) );
+  if (activePlane) {
+    activePlane.route.push( getMousePos(e) );
   }
 }
 
