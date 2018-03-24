@@ -1,41 +1,79 @@
+var ticker;
 var iTick = 0;
 function tick() {
   if (ready) {
     iTick++;
     // console.log(iTick);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    lzs.forEach( lz => {
+      lz.draw(ctx);
+    });
     planes.forEach( plane => {
       plane.draw(ctx);
       if ( plane.route.length >= 2 ) {
-        if ( iTick%5===0 ) plane.activeMove();
+        if ( iTick%2===0 ) plane.activeMove();
       }
       else {
-        plane.passiveMove();
+        plane.passiveMove(ctx);
       }
-
     });
+    detectCollision();
   }
-  requestAnimationFrame(tick);
+  ticker = requestAnimationFrame(tick);
 }
-requestAnimationFrame(tick);
+ticker = requestAnimationFrame(tick);
 
-var ready, activePlane, move, defaultMove, canvas, ctx, planes;
+var ready, activePlane, move, defaultMove, canvas, ctx, planes, lzs;
 document.addEventListener('DOMContentLoaded', () => {
   const img = new Image(50, 50);
   img.src = "../awesome-face-png-1.png";
   img.onload = () => {
-    // let plane = new Plane({ img, x:-50, y:-50, route:[], speed:1 });
-    // let plane2 = new Plane({ img, x:50, y:50, route:[], speed:1 });
-    // planes = [plane, plane2];
-    planes = spawnPlanes(3, img);
     canvas = document.getElementById("contentContainer");
     ctx = canvas.getContext("2d");
     canvas.addEventListener("mousedown", mousedownReset);
     canvas.addEventListener("mouseup", () => ( activePlane = null ));
     canvas.addEventListener("mousemove", recMousePos);
+    planes = spawnPlanes(3, img);
+    lzs = [ new LandingZone({ radius:25, x:275, y:175 }) ];
     ready = true;
   };
 });
+
+class LandingZone {
+  constructor(options) {
+    this.radius = options.radius;
+    this.x = options.x;
+    this.y = options.y;
+  }
+  draw(ctx) {
+    ctx.strokeStyle='blue';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+    // ctx.arc(275, 175, 25, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+}
+
+function detectCollision() {
+  for (var i = 0; i < planes.length; i++) {
+    for (var l = 0; l < lzs.length; l++) {
+      if ( planes[i].collidesWith(lzs[l]) ) {
+        console.log( 'plane landed' );
+        planes.splice(i, 1);
+      }
+    }
+    for (var j = i+1; j < planes.length; j++) {
+      if ( planes[i].collidesWith(planes[j]) ) {
+        console.log('collision detected');
+        window.cancelAnimationFrame(ticker);
+        return;
+        // delete planes[i];
+        // delete planes[j];
+      }
+    }
+  }
+}
 
 function randFromRange(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
@@ -43,8 +81,8 @@ function randFromRange(min, max) {
 function spawnPlanes(n, img) {
   const planesArr = [];
   for (var i = 0; i < n; i++) {
-    const x = randFromRange(-50, 0);
-    const y = randFromRange(-50, 0);
+    const x = randFromRange(0, canvas.width);
+    const y = randFromRange(0, canvas.height);
     planesArr.push( new Plane({ img, x, y }) );
   }
   return planesArr;
@@ -53,10 +91,28 @@ function spawnPlanes(n, img) {
 class Plane {
   constructor(options) {
     this.img = options.img;
+    this.radius = options.img.width/2;
     this.x = options.x;
     this.y = options.y;
     this.route = [];
     this.speed = options.speed || 1;
+    this.vector = this.randomVector();
+  }
+  randomVector() {
+    var dx=0, dy=0;
+    while (dx===0 && dy===0) {
+      dx = randFromRange(-1, 2);
+      dy = randFromRange(-1, 2);
+    }
+    return { dx, dy };
+  }
+  bounce(ctx) {
+    if ((this.x+this.radius > ctx.canvas.width) || (this.x-this.radius < 0)) {
+      this.vector.dx *= -1;
+    }
+    if ((this.y+this.radius > ctx.canvas.height) || (this.y-this.radius < 0)) {
+      this.vector.dy *= -1;
+    }
   }
   draw(ctx) {
     ctx.drawImage(
@@ -79,14 +135,36 @@ class Plane {
     }
   }
   activeMove() {
+    if (this.route.length === 2) {
+      this.getPassiveVector();
+    }
     const { x, y } = this.route.shift();
     this.x = x;
     this.y = y;
   }
-  passiveMove() {
-    // will build this out later
-    this.x += 1;
-    this.y += 1;
+  getPassiveVector() {
+    const ax = this.route[1].x;
+    const bx = this.route[0].x;
+    const by = this.route[0].y;
+    const ay = this.route[1].y;
+    this.vector = {
+      dx: ax-bx,
+      dy: ay-by
+    };
+  }
+  passiveMove(ctx) {
+    this.bounce(ctx);
+    this.x += this.vector.dx;
+    this.y += this.vector.dy;
+  }
+  collidesWith(that) {
+    const dx = this.x - that.x;
+    const dy = this.y - that.y;
+    var distance = Math.sqrt(dx * dx + dy * dy);
+    if ( distance < this.radius + that.radius ) {
+      return true;
+    }
+    return false;
   }
 }
 
@@ -94,7 +172,7 @@ function mousedownReset(e) {
   const { x, y } = getMousePos(e);
   console.log(`mousedown @ ${x}, ${y}`);
   planes.forEach( plane => {
-    if ( Math.abs(x-plane.x) < (plane.img.width/2) && Math.abs(y-plane.y) < (plane.img.width/2) ) {
+    if ( Math.abs(x-plane.x) < plane.radius && Math.abs(y-plane.y) < plane.radius ) {
       activePlane = plane;
       plane.route = [];
     }
