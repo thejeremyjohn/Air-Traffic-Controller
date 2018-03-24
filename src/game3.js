@@ -1,31 +1,27 @@
 var ticker;
 function tick() {
   if (ready) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     lzs.forEach( lz => {
       lz.draw(ctx);
     });
-    planes.forEach( plane => {
-      plane.draw(ctx);
-      if ( plane.route.length >= 2 ) {
-        plane.activeMove();
-      }
-      else {
-        plane.passiveMove(ctx);
-      }
-    });
-    detectCollision();
+    for (var i = 0; i < planes.length; i++) {
+      planes[i].draw(ctx);
+      planes[i].move(ctx);
+      detectCollision(i);
+    }
   }
   ticker = requestAnimationFrame(tick);
+  // console.log(ticker);
 }
 ticker = requestAnimationFrame(tick);
 
-var ready, activePlane, move, defaultMove, canvas, ctx, planes, lzs;
+var ready, activePlane, ctx, planes, lzs;
 document.addEventListener('DOMContentLoaded', () => {
   const img = new Image(50, 50);
   img.src = "../awesome-face-png-1.png";
   img.onload = () => {
-    canvas = document.getElementById("contentContainer");
+    const canvas = document.getElementById("contentContainer");
     ctx = canvas.getContext("2d");
     canvas.addEventListener("mousedown", mousedownReset);
     canvas.addEventListener("mouseup", () => ( activePlane = null ));
@@ -52,22 +48,22 @@ class LandingZone {
   }
 }
 
-function detectCollision() {
-  for (var i = 0; i < planes.length; i++) {
-    for (var l = 0; l < lzs.length; l++) {
-      if ( planes[i].collidesWith(lzs[l]) ) {
-        console.log( 'plane landed' );
-        planes.splice(i, 1);
-      }
+function detectCollision(i) {
+  for (var lzi = 0; lzi < lzs.length; lzi++) {
+    if ( planes[i].collidesWith(lzs[lzi]) ) {
+      console.log( 'plane landed' );
+      planes.splice(i, 1);
+      return;
     }
-    for (var j = i+1; j < planes.length; j++) {
-      if ( planes[i].collidesWith(planes[j]) ) {
-        console.log('collision detected');
-        window.cancelAnimationFrame(ticker);
-        return;
-        // delete planes[i];
-        // delete planes[j];
-      }
+  }
+  for (var j = 0; j < planes.length; j++) {
+    if ( i === j ) continue;
+    if ( planes[i].collidesWith(planes[j]) ) {
+      console.log('collision detected');
+      window.cancelAnimationFrame(ticker);
+      return;
+      // delete planes[i];
+      // delete planes[j];
     }
   }
 }
@@ -87,8 +83,8 @@ function randFromRange(min, max) {
 function spawnPlanes(n, img) {
   const planesArr = [];
   for (var i = 0; i < n; i++) {
-    const x = randFromRange(0+25, canvas.width-25);
-    const y = randFromRange(0+25, canvas.height-25);
+    const x = randFromRange(0+25, ctx.canvas.width-25);
+    const y = randFromRange(0+25, ctx.canvas.height-25);
     planesArr.push( new Plane({ img, x, y }) );
   }
   return planesArr;
@@ -113,10 +109,12 @@ class Plane {
     return { dx, dy };
   }
   bounce(ctx) {
-    if ((this.x+this.radius > ctx.canvas.width) || (this.x-this.radius < 0)) {
+    if ( (this.x+this.radius > ctx.canvas.width)
+    || (this.x-this.radius < 0) ) {
       this.vector.dx *= -1;
     }
-    if ((this.y+this.radius > ctx.canvas.height) || (this.y-this.radius < 0)) {
+    if ( (this.y+this.radius > ctx.canvas.height)
+    || (this.y-this.radius < 0) ) {
       this.vector.dy *= -1;
     }
   }
@@ -140,10 +138,17 @@ class Plane {
       }
     }
   }
-  activeMove() {
-    if (this.route.length === 2) {
-      this.getPassiveVector();
+  move(ctx) {
+    if (this.route.length >= 2) {
+      this.activeMove();
+      if (this.route.length === 2) {
+        this.getPassiveVector();
+      }
+    } else {
+      this.passiveMove(ctx);
     }
+  }
+  activeMove() {
     this.route.splice(0, this.speed);
     const { x, y } = this.route[0];
     this.x = x;
