@@ -1,9 +1,6 @@
 var ticker;
-var iTick = 0;
 function tick() {
   if (ready) {
-    iTick++;
-    // console.log(iTick);
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     lzs.forEach( lz => {
       lz.draw(ctx);
@@ -11,7 +8,7 @@ function tick() {
     planes.forEach( plane => {
       plane.draw(ctx);
       if ( plane.route.length >= 2 ) {
-        if ( iTick%2===0 ) plane.activeMove();
+        plane.activeMove();
       }
       else {
         plane.passiveMove(ctx);
@@ -32,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx = canvas.getContext("2d");
     canvas.addEventListener("mousedown", mousedownReset);
     canvas.addEventListener("mouseup", () => ( activePlane = null ));
-    canvas.addEventListener("mousemove", recMousePos);
+    canvas.addEventListener("mousemove", buildRoute);
     planes = spawnPlanes(3, img);
     lzs = [ new LandingZone({ radius:25, x:275, y:175 }) ];
     ready = true;
@@ -75,14 +72,23 @@ function detectCollision() {
   }
 }
 
+// function getRandomArbitrary(min, max) {
+//   const a = [];
+//   for (var i = 0; i < 100; i++) {
+//     let r = Math.random() * (max - min) + min;
+//     a.push(r);
+//   }
+//   return a;
+// }
+// getRandomArbitrary(-1,2);
 function randFromRange(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 function spawnPlanes(n, img) {
   const planesArr = [];
   for (var i = 0; i < n; i++) {
-    const x = randFromRange(0, canvas.width);
-    const y = randFromRange(0, canvas.height);
+    const x = randFromRange(0+25, canvas.width-25);
+    const y = randFromRange(0+25, canvas.height-25);
     planesArr.push( new Plane({ img, x, y }) );
   }
   return planesArr;
@@ -138,7 +144,8 @@ class Plane {
     if (this.route.length === 2) {
       this.getPassiveVector();
     }
-    const { x, y } = this.route.shift();
+    this.route.splice(0, this.speed);
+    const { x, y } = this.route[0];
     this.x = x;
     this.y = y;
   }
@@ -169,10 +176,11 @@ class Plane {
 }
 
 function mousedownReset(e) {
-  const { x, y } = getMousePos(e);
-  console.log(`mousedown @ ${x}, ${y}`);
+  const mouse = getMousePos(e);
+  console.log(`mousedown @ ${mouse.x}, ${mouse.y}`);
   planes.forEach( plane => {
-    if ( Math.abs(x-plane.x) < plane.radius && Math.abs(y-plane.y) < plane.radius ) {
+    if ( Math.abs(mouse.x-plane.x) < plane.radius
+    && Math.abs(mouse.y-plane.y) < plane.radius ) {
       activePlane = plane;
       plane.route = [];
     }
@@ -186,10 +194,30 @@ function getMousePos(e) {
   return { x, y };
 }
 
-function recMousePos(e) {
+function buildRoute(e) {
   if (activePlane) {
-    activePlane.route.push( getMousePos(e) );
+    var lastPoint;
+    if (activePlane.route.length===0) {
+      lastPoint = activePlane;
+    } else {
+      lastPoint = activePlane.route[activePlane.route.length-1];
+    }
+    const currentPoint = getMousePos(e);
+    const dist = distanceBetween(lastPoint, currentPoint);
+    const angle = angleBetween(lastPoint, currentPoint);
+
+    for (var i = 0; i < dist; i++) {
+      let x = lastPoint.x + (Math.sin(angle) * i);
+      let y = lastPoint.y + (Math.cos(angle) * i);
+      activePlane.route.push({ x, y });
+    }
   }
+}
+function distanceBetween(a, b) {
+  return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+}
+function angleBetween(a, b) {
+  return Math.atan2( b.x - a.x, b.y - a.y );
 }
 
 // Helper function to get an element's exact position
