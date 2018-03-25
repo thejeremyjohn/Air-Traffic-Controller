@@ -3,7 +3,6 @@ function tick() {
   if (ready) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     // test.draw(ctx);
-    drawScore();
     lzs.forEach( lz => {
       lz.draw(ctx);
     });
@@ -13,29 +12,51 @@ function tick() {
       // console.log(`game on! ticker = ${ticker}`);
       detectCollision(i);
     }
+    drawScore();
   }
   ticker = requestAnimationFrame(tick);
 }
 ticker = requestAnimationFrame(tick);
 
-var ready, activePlane, ctx, planes, lzs, score, img, test;
+var ready, activePlane, ctx, planes, lzs, score, img, dead, test, gameOver;
 const colors = ['blue', 'red'];
 document.addEventListener('DOMContentLoaded', () => {
-  img = new Image(50, 50);
-  img.src = "../awesome-face-png-1.png";
-  img.onload = () => {
-    const canvas = document.getElementById("contentContainer");
-    ctx = canvas.getContext("2d");
-    canvas.addEventListener("mousedown", mousedownReset);
-    canvas.addEventListener("mouseup", () => ( activePlane = null ));
-    canvas.addEventListener("mousemove", buildRoute);
-    planes = spawnPlanes(3, img);
-    // test = new Plane( { img, color: 'red', x:0, y:-5 } );
-    lzs = spawnLZs(2);
-    score = 0;
-    ready = true;
-  };
+  happy = new Image(50, 50);
+  dead = new Image(50, 50);
+  worried = new Image(50, 50);
+  happy.src = "../plane_img/eyeglasses-black-face-emoticon.png";
+  dead.src = "../plane_img/astonished-black-emoticon-face.png";
+  worried.src = "../plane_img/worried-black-face.png";
+  // img.src = "../astonished-black-emoticon-face.png";
+  // happy.src = "../eyeglasses-black-face-emoticon(2).png";
+  // happy.src = "../sunglasses-black-emoticon-face.png";
+  var collect = imgCollect()
+  happy.onload = () => ( collect = collect() )
+  dead.onload = () => ( collect = collect() )
+  worried.onload = () => ( collect = collect() )
 });
+
+function imgCollect() {
+  var count = 0;
+  const collector = () => {
+    count++
+    if (count === 3) {
+      const canvas = document.getElementById("contentContainer");
+      ctx = canvas.getContext("2d");
+      canvas.addEventListener("mousedown", mousedownReset);
+      canvas.addEventListener("mouseup", () => ( activePlane = null ));
+      canvas.addEventListener("mousemove", buildRoute);
+      planes = spawnPlanes(3, happy);
+      // test = new Plane( { happy, color: 'red', x:0, y:-5 } );
+      lzs = spawnLZs(2);
+      score = 0;
+      ready = true;
+    } else {
+      return collector;
+    }
+  }
+  return collector;
+}
 
 class LandingZone {
   constructor(options) {
@@ -58,19 +79,23 @@ class LandingZone {
 function drawScore() {
   ctx.font = "30px Arial";
   ctx.fillText(score,10,30);
-  // ctx.font = "80px Arial";
-  // ctx.fillText('GAME OVER',10,100);
+  if (gameOver) {
+    ctx.font = "130px Arial";
+    ctx.textAlign='center'
+    ctx.fillText('GAME',ctx.canvas.width/2, (ctx.canvas.height/2)-10);
+    ctx.fillText('OVER',ctx.canvas.width/2, (ctx.canvas.height/2)+90);
+  }
 }
 
 function detectCollision(i) {
   if ( planes[i].route.length >= 2 ) {
     for (var lzi = 0; lzi < lzs.length; lzi++) {
       if ( planes[i].color === lzs[lzi].color
-      && planes[i].collidesWith(lzs[lzi]) ) {
+      && planes[i].collidesWith(ctx, lzs[lzi]) ) {
         score++;
         console.log( 'plane landed' );
         planes.splice(i, 1);
-        let newPlanes = spawnPlanes( Math.floor(score/5) || 1, img );
+        let newPlanes = spawnPlanes( Math.floor(score/5) || 1, happy );
         planes = planes.concat(newPlanes);
         return;
       }
@@ -78,8 +103,11 @@ function detectCollision(i) {
   }
   for (var j = 0; j < planes.length; j++) {
     if ( i === j ) continue;
-    if ( planes[i].collidesWith(planes[j]) ) {
-      console.log(`game over...?`);
+    if ( planes[i].collidesWith(ctx, planes[j]) ) {
+      gameOver = true;
+      ctx.canvas.removeEventListener("mousedown", mousedownReset);
+      // ctx.canvas.addEventListener("mouseup");
+      ctx.canvas.removeEventListener("mousemove", buildRoute);
       window.cancelAnimationFrame(ticker);
       return;
     }
@@ -111,8 +139,9 @@ function spawnPlanes(n, img) {
     const color = colors[Math.floor(Math.random()*colors.length)];
     const x = getRandomInt(0+25, ctx.canvas.width-25);
     const y = getRandomInt(0+25, ctx.canvas.height-25);
+    // const { x, y } = spawnPoint(ctx)
     planesArr.push( new Plane(
-      { img, color, x, y }
+      { img:img, color, x, y }
     ));
   }
   return planesArr;
@@ -137,38 +166,53 @@ class Plane {
     this.y = options.y;
     this.route = [];
     this.speed = options.speed || 1;
-    this.vector = this.randomVector();
+    this.vector = this.randomVector(ctx);
     this.color = options.color;
   }
-  // randomVector() {
-  //   var dx=0, dy=0;
-  //   while (dx===0 && dy===0) {
-  //     dx = getRandomInt(-1, 2);
-  //     dy = getRandomInt(-1, 2);
-  //   }
-  //   return { dx, dy };
-  // }
-  randomVector() {
+  randomVector(ctx) {
     const angle = getRandomFloat(0, 2*Math.PI);
-    const dx = this.speed * Math.cos(angle);
-    const dy = this.speed * Math.sin(angle);
+    var dx = this.speed * Math.cos(angle);
+    var dy = this.speed * Math.sin(angle);
+    const mx = ctx.canvas.width/2
+    const my = ctx.canvas.height/2
+    if (this.x >= mx) {
+      dx = Math.abs(dx) * -1
+    } else {
+      dx = Math.abs(dx)
+    }
+    if (this.y >= my) {
+      dy = Math.abs(dy) * -1
+    } else {
+      dy = Math.abs(dy)
+    }
     return { dx, dy };
   }
   draw(ctx) {
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.radius+2, 0, 2 * Math.PI);
+    ctx.fill();
     ctx.drawImage(
       this.img,
       this.x-(this.img.width/2),
       this.y-(this.img.height/2),
       this.img.width, this.img.height
     );
-    ctx.strokeStyle=this.color;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-    ctx.stroke();
+    // ctx.drawImage(
+    //   this.img,
+    //   this.x-(this.img.width/2),
+    //   this.y-(this.img.height/2),
+    //   this.img.width, this.img.height
+    // );
+    // ctx.strokeStyle=this.color;
+    // ctx.lineWidth = 3;
+    // ctx.beginPath();
+    // ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+    // ctx.stroke();
     if ( this.route.length >= 2 ) {
-      ctx.lineWidth = 3;
-      for (var i = 1; i < this.route.length; i++) {
+      ctx.strokeStyle = this.color;
+      ctx.lineWidth = 5;
+      for (var i = 1; i < this.route.length; i+=3) {
         let a = this.route[i-1];
         let b = this.route[i];
         ctx.beginPath();
@@ -178,15 +222,28 @@ class Plane {
       }
     }
   }
+  withinBounds(ctx) {
+    return (
+      this.x+this.radius < ctx.canvas.width && this.x-this.radius > 0
+      && this.y+this.radius < ctx.canvas.height && this.y-this.radius > 0
+    )
+  }
   bounce(ctx) {
-    if ( (this.x+this.radius > ctx.canvas.width)
-    || (this.x-this.radius < 0) ) {
-      this.vector.dx *= -1;
-    }
-    if ( (this.y+this.radius > ctx.canvas.height)
-    || (this.y-this.radius < 0) ) {
-      this.vector.dy *= -1;
-    }
+    // if ( this.withinBounds(ctx) ) {
+    //   console.log('within');
+      if (
+        this.x+this.radius > ctx.canvas.width
+        || this.x-this.radius < 0
+      ) {
+        this.vector.dx *= -1;
+      }
+      if (
+        this.y+this.radius > ctx.canvas.height
+        || this.y-this.radius < 0
+      ) {
+        this.vector.dy *= -1;
+      }
+    // }
   }
   move(ctx) {
     if (this.route.length >= 2) {
@@ -219,14 +276,29 @@ class Plane {
     this.x += this.vector.dx;
     this.y += this.vector.dy;
   }
-  collidesWith(that) {
+  collidesWith(ctx, that) {
     const distX = this.x - that.x;
     const distY = this.y - that.y;
     var distance = Math.sqrt(distX**2 + distY**2);
+    if ( distance-30 < this.radius + that.radius ) {
+      this.changeImg(ctx, worried);
+    } else {
+      this.changeImg(ctx, happy);
+    }
     if ( distance < this.radius + that.radius ) {
+      this.changeImg(ctx, dead);
+      this.draw(ctx);
+      this.vector = { dx:0, dy:0 };
+      this.route = [];
+      that.vector = { dx:0, dy:0 };
+      that.route = [];
       return true;
     }
     return false;
+  }
+  changeImg(ctx, img) {
+    this.img = img;
+    this.draw(ctx)
   }
 }
 
@@ -241,7 +313,6 @@ function mousedownReset(e) {
     }
   });
 }
-
 function getMousePos(e) {
   const parentPos = getPosition(e.currentTarget);
   const x = e.clientX - parentPos.x;
