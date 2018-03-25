@@ -23,10 +23,10 @@ document.addEventListener('DOMContentLoaded', () => {
   worried = new Image(50, 50);
   dead = new Image(50, 50);
   shocked = new Image(50, 50);
-  happy.src = "../plane_img/eyeglasses-black-face-emoticon.png";
-  dead.src = "../plane_img/astonished-black-emoticon-face.png";
-  worried.src = "../plane_img/worried-black-face.png";
-  shocked.src = "../plane_img/flashed-black-emoticon-face.png";
+  happy.src = "./plane_img/eyeglasses-black-face-emoticon.png";
+  dead.src = "./plane_img/astonished-black-emoticon-face.png";
+  worried.src = "./plane_img/worried-black-face.png";
+  shocked.src = "./plane_img/flashed-black-emoticon-face.png";
   // cool.src = "../plane_img/sunglasses-black-emoticon-face.png";
   var collect = imgCollect(4);
   happy.onload = () => ( collect = collect() );
