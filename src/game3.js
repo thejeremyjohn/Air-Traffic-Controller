@@ -10,7 +10,7 @@ function tick() {
       planes[i].draw();
       planes[i].move();
       // console.log(`game on! ticker = ${ticker}`);
-      detectCollision(i);
+      handleProximity(i);
     }
     drawScore();
   }
@@ -27,9 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
   happy.src = "../plane_img/eyeglasses-black-face-emoticon.png";
   dead.src = "../plane_img/astonished-black-emoticon-face.png";
   worried.src = "../plane_img/worried-black-face.png";
-  // img.src = "../astonished-black-emoticon-face.png";
-  // happy.src = "../eyeglasses-black-face-emoticon(2).png";
-  // happy.src = "../sunglasses-black-emoticon-face.png";
+  // cool.src = "../plane_img/sunglasses-black-emoticon-face.png";
   var collect = imgCollect()
   happy.onload = () => ( collect = collect() )
   dead.onload = () => ( collect = collect() )
@@ -42,11 +40,15 @@ function imgCollect() {
     count++
     if (count === 3) {
       const canvas = document.getElementById("contentContainer");
-      ctx = canvas.getContext("2d");
       canvas.addEventListener("mousedown", mousedownReset);
       canvas.addEventListener("mouseup", () => ( activePlane = null ));
       canvas.addEventListener("mousemove", buildRoute);
-      planes = spawnPlanes(3, happy);
+      ctx = canvas.getContext("2d");
+      planes = [];
+      planes.push( spawnPlane() );
+      planes.push( spawnPlane() );
+      // planes.push( spawnPlane() );
+      // planes.push( spawnPlane() );
       // test = new Plane( { happy, color: 'red', x:0, y:-5 } );
       lzs = spawnLZs(2);
       score = 0;
@@ -77,48 +79,83 @@ class LandingZone {
 }
 
 function drawScore() {
-  ctx.font = "30px Arial";
-  ctx.fillText(score,10,30);
+  ctx.textAlign='center'
+  ctx.fillStyle = 'white';
+  ctx.font = "20px Arial";
+  ctx.fillText(score, ctx.canvas.width/2, ctx.canvas.height-10);
+  ctx.globalAlpha = 0.5
+  if (score<3) {
+    ctx.font = "20px Arial";
+    ctx.fillText(
+      'click and drag the emoji to its color-matched landing pad',
+      ctx.canvas.width/2 ,40
+    );
+  }
   if (gameOver) {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle='purple';
     ctx.font = "130px Arial";
-    ctx.textAlign='center'
     ctx.fillText('GAME',ctx.canvas.width/2, (ctx.canvas.height/2)-10);
     ctx.fillText('OVER',ctx.canvas.width/2, (ctx.canvas.height/2)+90);
   }
+  ctx.globalAlpha = 1
 }
 
-function detectCollision(i) {
+function handleProximity(i) {
   if ( planes[i].route.length >= 2 ) {
     for (var lzi = 0; lzi < lzs.length; lzi++) {
       if ( planes[i].color === lzs[lzi].color
-      && planes[i].collidesWith(ctx, lzs[lzi]) ) {
+      && planes[i].collidesWith(lzs[lzi]) ) {
         score++;
         console.log( 'plane landed' );
         planes.splice(i, 1);
-        let newPlanes = spawnPlanes( Math.floor(score/5) || 1, happy );
-        planes = planes.concat(newPlanes);
+        if (score < 10) {
+          planes.push( spawnPlane() );
+          console.log('spawning');
+        } else {
+          // const times = 1;
+          // const times = getRandomInt(1,3);
+          // for (var i = 0; i < times; i++) {
+          //   planes.push( spawnPlane() );
+          // }
+          while ( planes.length < Math.floor(score/5) ) {
+            console.log('spawning');
+            planes.push( spawnPlane() );
+          }
+        }
         return;
       }
     }
   }
+
   for (var j = 0; j < planes.length; j++) {
     if ( i === j ) continue;
-    if ( planes[i].collidesWith(ctx, planes[j]) ) {
+
+    if ( planes[i].nearlyCollidesWith(planes[j]) ) {
+      planes[i].changeImg(worried);
+    } else {
+      planes[i].changeImg(happy);
+    }
+
+    if ( planes[i].collidesWith(planes[j]) ) {
       gameOver = true;
       ctx.canvas.removeEventListener("mousedown", mousedownReset);
-      // ctx.canvas.addEventListener("mouseup");
       ctx.canvas.removeEventListener("mousemove", buildRoute);
-      window.cancelAnimationFrame(ticker);
+      planes[i].changeImg(dead);
+      planes[i].vector = { dx:0, dy:0 };
+      planes[i].route = [];
       return;
     }
   }
 }
 function spawnPoint(ctx) {
   spawnAreas = [
-    [[-50, 0], [-50, ctx.canvas.height+50]],
-    [[0, ctx.canvas.width], [-50, 0]],
-    [[ctx.canvas.width, ctx.canvas.width+50], [-50, ctx.canvas.height+50]],
-    [[0, ctx.canvas.width], [ctx.canvas.height, ctx.canvas.height+50]]
+    [[-55, -5], [-55, ctx.canvas.height+55]],
+    [[-5, ctx.canvas.width-5], [-55, -5]],
+    [[ctx.canvas.width+5, ctx.canvas.width+55], [-55, ctx.canvas.height+55]],
+    [[-5, ctx.canvas.width-5], [ctx.canvas.height+5, ctx.canvas.height+55]]
   ]
   const area = spawnAreas[Math.floor(Math.random()*spawnAreas.length)];
   console.log(area);
@@ -133,19 +170,44 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 
-function spawnPlanes(n, img) {
-  const planesArr = [];
-  for (var i = 0; i < n; i++) {
-    const color = colors[Math.floor(Math.random()*colors.length)];
-    const x = getRandomInt(0+25, ctx.canvas.width-25);
-    const y = getRandomInt(0+25, ctx.canvas.height-25);
-    // const { x, y } = spawnPoint(ctx)
-    planesArr.push( new Plane(
-      { ctx, img:img, color, x, y }
-    ));
+function spawnPlane() {
+  const color = colors[Math.floor(Math.random()*colors.length)];
+  const radius = happy.width/2;
+  var x = getRandomInt(0+radius, ctx.canvas.width-radius);
+  var y = getRandomInt(0+radius, ctx.canvas.height-radius);
+  // var { x, y } = spawnPoint(ctx)
+  var p = { radius, x, y }
+
+  var closeCall = true;
+  while (closeCall) {
+    closeCall = false;
+    for (var i = 0; i < planes.length; i++) {
+      if (planes[i].inVicinityOf(p)) {
+        // console.log(`${i} this would be a closeCall`);
+        x = getRandomInt(0+radius, ctx.canvas.width-radius);
+        y = getRandomInt(0+radius, ctx.canvas.height-radius);
+        // var { x, y } = spawnPoint(ctx)
+        p = { radius, x, y }
+        closeCall = true;
+        break;
+      }
+    }
   }
-  return planesArr;
+  return new Plane({ ctx, img: happy, color, x, y })
 }
+// function spawnPlanes(n, img) {
+//   const planesArr = [];
+//   for (var i = 0; i < n; i++) {
+//     const color = colors[Math.floor(Math.random()*colors.length)];
+//     const x = getRandomInt(0+25, ctx.canvas.width-25);
+//     const y = getRandomInt(0+25, ctx.canvas.height-25);
+//     // const { x, y } = spawnPoint(ctx)
+//     planesArr.push( new Plane(
+//       { ctx, img:img, color, x, y }
+//     ));
+//   }
+//   return planesArr;
+// }
 function spawnLZs(n) {
   const LZArr = [];
   for (var i = 0; i < colors.length; i++) {
@@ -212,8 +274,8 @@ class Plane {
     // this.ctx.stroke();
     if ( this.route.length >= 2 ) {
       this.ctx.strokeStyle = this.color;
-      this.ctx.lineWidth = 5;
-      for (var i = 1; i < this.route.length; i+=3) {
+      this.ctx.lineWidth = 3;
+      for (var i = 1; i < this.route.length; i+=7) {
         let a = this.route[i-1];
         let b = this.route[i];
         this.ctx.beginPath();
@@ -225,21 +287,23 @@ class Plane {
   }
   withinBounds() {
     return (
-      this.x+this.radius < this.ctx.canvas.width && this.x-this.radius > 0
-      && this.y+this.radius < this.ctx.canvas.height && this.y-this.radius > 0
+         this.x-this.radius-1 > 0
+      && this.x+this.radius+1 < this.ctx.canvas.width
+      && this.y-this.radius-1 > 0
+      && this.y+this.radius+1 < this.ctx.canvas.height
     )
   }
   bounce() {
-    // if ( this.withinBounds() ) {
-    //   console.log('within');
+    // var inbounds = this.withinBounds()
+    // if ( inbounds ) {
       if (
-        this.x+this.radius > this.ctx.canvas.width
+           this.x+this.radius > this.ctx.canvas.width
         || this.x-this.radius < 0
       ) {
         this.vector.dx *= -1;
       }
       if (
-        this.y+this.radius > this.ctx.canvas.height
+           this.y+this.radius > this.ctx.canvas.height
         || this.y-this.radius < 0
       ) {
         this.vector.dy *= -1;
@@ -273,31 +337,33 @@ class Plane {
     };
   }
   passiveMove() {
+    // console.log(`withinBounds = ${this.withinBounds()}`);
     this.bounce();
     this.x += this.vector.dx;
     this.y += this.vector.dy;
   }
-  collidesWith(ctx, that) {
-    const distX = this.x - that.x;
-    const distY = this.y - that.y;
-    var distance = Math.sqrt(distX**2 + distY**2);
-    if ( distance-30 < this.radius + that.radius ) {
-      this.changeImg(ctx, worried);
-    } else {
-      this.changeImg(ctx, happy);
-    }
+  collidesWith(that) {
+    var distance = distanceBetween(this, that);
     if ( distance < this.radius + that.radius ) {
-      this.changeImg(ctx, dead);
-      this.draw();
-      this.vector = { dx:0, dy:0 };
-      this.route = [];
-      that.vector = { dx:0, dy:0 };
-      that.route = [];
       return true;
     }
     return false;
   }
-  changeImg(ctx, img) {
+  nearlyCollidesWith(that) {
+    var distance = distanceBetween(this, that) - 30;
+    if ( distance < this.radius + that.radius ) {
+      return true;
+    }
+    return false;
+  }
+  inVicinityOf(that) {
+    var distance = distanceBetween(this, that) - 75;
+    if ( distance < this.radius + that.radius ) {
+      return true;
+    }
+    return false;
+  }
+  changeImg(img) {
     if (this.img !== img) {
       this.img = img;
       this.draw()
@@ -332,13 +398,18 @@ function buildRoute(e) {
       lastPoint = activePlane.route[activePlane.route.length-1];
     }
     const currentPoint = getMousePos(e);
-    const dist = distanceBetween(lastPoint, currentPoint);
+    const distance = distanceBetween(lastPoint, currentPoint);
     const angle = angleBetween(lastPoint, currentPoint);
 
-    for (var i = 0; i < dist; i++) {
+    for (var i = 0; i < distance; i++) {
       let x = lastPoint.x + (Math.sin(angle) * i);
       let y = lastPoint.y + (Math.cos(angle) * i);
-      activePlane.route.push({ x, y });
+
+      let a = activePlane.route[activePlane.route.length-1] || lastPoint;
+      let b = { x, y };
+      if ( distanceBetween(a, b) > 0 ) {
+        activePlane.route.push({ x, y });
+      }
     }
   }
 }
@@ -349,19 +420,15 @@ function angleBetween(a, b) {
   return Math.atan2( b.x - a.x, b.y - a.y );
 }
 
-// Helper function to get an element's exact position
 function getPosition(el) {
-  var x = 0;
-  var y = 0;
+  var x = 0, y = 0;
   while (el) {
     if (el.tagName === "BODY") {
-      // deal with browser quirks with body/window/document and page scroll
       var xScroll = el.scrollLeft || document.documentElement.scrollLeft;
       var yScroll = el.scrollTop || document.documentElement.scrollTop;
       x += (el.offsetLeft - xScroll + el.clientLeft);
       y += (el.offsetTop - yScroll + el.clientTop);
     } else {
-      // for all other non-BODY elements
       x += (el.offsetLeft - el.scrollLeft + el.clientLeft);
       y += (el.offsetTop - el.scrollTop + el.clientTop);
     }
