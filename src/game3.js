@@ -2,14 +2,12 @@ var ticker;
 function tick() {
   if (ready) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    // test.draw();
     lzs.forEach( lz => {
       lz.draw(ctx);
     });
     for (var i = 0; i < planes.length; i++) {
       planes[i].draw();
       planes[i].move();
-      // console.log(`game on! ticker = ${ticker}`);
       handleProximity(i);
     }
     drawScore();
@@ -18,27 +16,30 @@ function tick() {
 }
 ticker = requestAnimationFrame(tick);
 
-var ready, activePlane, ctx, planes, lzs, score, img, dead, test, gameOver;
+var ready, activePlane, ctx, planes, lzs, score, img, dead, test, gameOver, happy, worried, dead, shocked;
 const colors = ['blue', 'red'];
 document.addEventListener('DOMContentLoaded', () => {
   happy = new Image(50, 50);
-  dead = new Image(50, 50);
   worried = new Image(50, 50);
+  dead = new Image(50, 50);
+  shocked = new Image(50, 50);
   happy.src = "../plane_img/eyeglasses-black-face-emoticon.png";
   dead.src = "../plane_img/astonished-black-emoticon-face.png";
   worried.src = "../plane_img/worried-black-face.png";
+  shocked.src = "../plane_img/flashed-black-emoticon-face.png";
   // cool.src = "../plane_img/sunglasses-black-emoticon-face.png";
-  var collect = imgCollect()
-  happy.onload = () => ( collect = collect() )
-  dead.onload = () => ( collect = collect() )
-  worried.onload = () => ( collect = collect() )
+  var collect = imgCollect(4);
+  happy.onload = () => ( collect = collect() );
+  worried.onload = () => ( collect = collect() );
+  dead.onload = () => ( collect = collect() );
+  shocked.onload = () => ( collect = collect() );
 });
 
-function imgCollect() {
+function imgCollect(n) {
   var count = 0;
   const collector = () => {
-    count++
-    if (count === 3) {
+    count++;
+    if (count === n) {
       const canvas = document.getElementById("contentContainer");
       canvas.addEventListener("mousedown", mousedownReset);
       canvas.addEventListener("mouseup", () => ( activePlane = null ));
@@ -47,16 +48,13 @@ function imgCollect() {
       planes = [];
       planes.push( spawnPlane() );
       planes.push( spawnPlane() );
-      // planes.push( spawnPlane() );
-      // planes.push( spawnPlane() );
-      // test = new Plane( { happy, color: 'red', x:0, y:-5 } );
       lzs = spawnLZs(2);
       score = 0;
       ready = true;
     } else {
       return collector;
     }
-  }
+  };
   return collector;
 }
 
@@ -79,11 +77,11 @@ class LandingZone {
 }
 
 function drawScore() {
-  ctx.textAlign='center'
+  ctx.textAlign='center';
   ctx.fillStyle = 'white';
   ctx.font = "20px Arial";
   ctx.fillText(score, ctx.canvas.width/2, ctx.canvas.height-10);
-  ctx.globalAlpha = 0.5
+  ctx.globalAlpha = 0.5;
   if (score<3) {
     ctx.font = "20px Arial";
     ctx.fillText(
@@ -100,7 +98,7 @@ function drawScore() {
     ctx.fillText('GAME',ctx.canvas.width/2, (ctx.canvas.height/2)-10);
     ctx.fillText('OVER',ctx.canvas.width/2, (ctx.canvas.height/2)+90);
   }
-  ctx.globalAlpha = 1
+  ctx.globalAlpha = 1;
 }
 
 function handleProximity(i) {
@@ -151,12 +149,12 @@ function handleProximity(i) {
   }
 }
 function spawnPoint(ctx) {
-  spawnAreas = [
+  const spawnAreas = [
     [[-55, -5], [-55, ctx.canvas.height+55]],
     [[-5, ctx.canvas.width-5], [-55, -5]],
     [[ctx.canvas.width+5, ctx.canvas.width+55], [-55, ctx.canvas.height+55]],
     [[-5, ctx.canvas.width-5], [ctx.canvas.height+5, ctx.canvas.height+55]]
-  ]
+  ];
   const area = spawnAreas[Math.floor(Math.random()*spawnAreas.length)];
   console.log(area);
   const [x, y] = area.map( range => getRandomInt(...range) );
@@ -176,7 +174,7 @@ function spawnPlane() {
   var x = getRandomInt(0+radius, ctx.canvas.width-radius);
   var y = getRandomInt(0+radius, ctx.canvas.height-radius);
   // var { x, y } = spawnPoint(ctx)
-  var p = { radius, x, y }
+  var p = { radius, x, y };
 
   var closeCall = true;
   while (closeCall) {
@@ -187,13 +185,13 @@ function spawnPlane() {
         x = getRandomInt(0+radius, ctx.canvas.width-radius);
         y = getRandomInt(0+radius, ctx.canvas.height-radius);
         // var { x, y } = spawnPoint(ctx)
-        p = { radius, x, y }
+        p = { radius, x, y };
         closeCall = true;
         break;
       }
     }
   }
-  return new Plane({ ctx, img: happy, color, x, y })
+  return new Plane({ ctx, img: happy, color, x, y });
 }
 // function spawnPlanes(n, img) {
 //   const planesArr = [];
@@ -222,7 +220,7 @@ function spawnLZs(n) {
 
 class Plane {
   constructor(options) {
-    this.ctx = options.ctx
+    this.ctx = options.ctx;
     this.img = options.img;
     this.radius = options.img.width/2;
     this.x = options.x;
@@ -236,21 +234,33 @@ class Plane {
     const angle = getRandomFloat(0, 2*Math.PI);
     var dx = this.speed * Math.cos(angle);
     var dy = this.speed * Math.sin(angle);
-    const mx = this.ctx.canvas.width/2
-    const my = this.ctx.canvas.height/2
+    const mx = this.ctx.canvas.width/2;
+    const my = this.ctx.canvas.height/2;
     if (this.x >= mx) {
-      dx = Math.abs(dx) * -1
+      dx = Math.abs(dx) * -1;
     } else {
-      dx = Math.abs(dx)
+      dx = Math.abs(dx);
     }
     if (this.y >= my) {
-      dy = Math.abs(dy) * -1
+      dy = Math.abs(dy) * -1;
     } else {
-      dy = Math.abs(dy)
+      dy = Math.abs(dy);
     }
     return { dx, dy };
   }
   draw() {
+    if ( this.route.length >= 2 ) {
+      this.ctx.strokeStyle = this.color;
+      this.ctx.lineWidth = 3;
+      for (var i = 1; i < this.route.length; i+=7) {
+        let a = this.route[i-1];
+        let b = this.route[i];
+        this.ctx.beginPath();
+        this.ctx.moveTo(a.x, a.y);
+        this.ctx.lineTo(b.x, b.y);
+        this.ctx.stroke();
+      }
+    }
     this.ctx.fillStyle = this.color;
     this.ctx.beginPath();
     this.ctx.arc(this.x, this.y, this.radius+2, 0, 2 * Math.PI);
@@ -272,18 +282,6 @@ class Plane {
     // this.ctx.beginPath();
     // this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
     // this.ctx.stroke();
-    if ( this.route.length >= 2 ) {
-      this.ctx.strokeStyle = this.color;
-      this.ctx.lineWidth = 3;
-      for (var i = 1; i < this.route.length; i+=7) {
-        let a = this.route[i-1];
-        let b = this.route[i];
-        this.ctx.beginPath();
-        this.ctx.moveTo(a.x, a.y);
-        this.ctx.lineTo(b.x, b.y);
-        this.ctx.stroke();
-      }
-    }
   }
   withinBounds() {
     return (
@@ -291,7 +289,7 @@ class Plane {
       && this.x+this.radius+1 < this.ctx.canvas.width
       && this.y-this.radius-1 > 0
       && this.y+this.radius+1 < this.ctx.canvas.height
-    )
+    );
   }
   bounce() {
     // var inbounds = this.withinBounds()
@@ -366,7 +364,7 @@ class Plane {
   changeImg(img) {
     if (this.img !== img) {
       this.img = img;
-      this.draw()
+      this.draw();
     }
   }
 }
