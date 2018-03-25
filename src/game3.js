@@ -2,13 +2,13 @@ var ticker;
 function tick() {
   if (ready) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    // test.draw(ctx);
+    // test.draw();
     lzs.forEach( lz => {
       lz.draw(ctx);
     });
     for (var i = 0; i < planes.length; i++) {
-      planes[i].draw(ctx);
-      planes[i].move(ctx);
+      planes[i].draw();
+      planes[i].move();
       // console.log(`game on! ticker = ${ticker}`);
       detectCollision(i);
     }
@@ -141,7 +141,7 @@ function spawnPlanes(n, img) {
     const y = getRandomInt(0+25, ctx.canvas.height-25);
     // const { x, y } = spawnPoint(ctx)
     planesArr.push( new Plane(
-      { img:img, color, x, y }
+      { ctx, img:img, color, x, y }
     ));
   }
   return planesArr;
@@ -160,21 +160,22 @@ function spawnLZs(n) {
 
 class Plane {
   constructor(options) {
+    this.ctx = options.ctx
     this.img = options.img;
     this.radius = options.img.width/2;
     this.x = options.x;
     this.y = options.y;
     this.route = [];
     this.speed = options.speed || 1;
-    this.vector = this.randomVector(ctx);
+    this.vector = this.randomVector();
     this.color = options.color;
   }
-  randomVector(ctx) {
+  randomVector() {
     const angle = getRandomFloat(0, 2*Math.PI);
     var dx = this.speed * Math.cos(angle);
     var dy = this.speed * Math.sin(angle);
-    const mx = ctx.canvas.width/2
-    const my = ctx.canvas.height/2
+    const mx = this.ctx.canvas.width/2
+    const my = this.ctx.canvas.height/2
     if (this.x >= mx) {
       dx = Math.abs(dx) * -1
     } else {
@@ -187,72 +188,72 @@ class Plane {
     }
     return { dx, dy };
   }
-  draw(ctx) {
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius+2, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.drawImage(
+  draw() {
+    this.ctx.fillStyle = this.color;
+    this.ctx.beginPath();
+    this.ctx.arc(this.x, this.y, this.radius+2, 0, 2 * Math.PI);
+    this.ctx.fill();
+    this.ctx.drawImage(
       this.img,
       this.x-(this.img.width/2),
       this.y-(this.img.height/2),
       this.img.width, this.img.height
     );
-    // ctx.drawImage(
+    // this.ctx.drawImage(
     //   this.img,
     //   this.x-(this.img.width/2),
     //   this.y-(this.img.height/2),
     //   this.img.width, this.img.height
     // );
-    // ctx.strokeStyle=this.color;
-    // ctx.lineWidth = 3;
-    // ctx.beginPath();
-    // ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-    // ctx.stroke();
+    // this.ctx.strokeStyle=this.color;
+    // this.ctx.lineWidth = 3;
+    // this.ctx.beginPath();
+    // this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+    // this.ctx.stroke();
     if ( this.route.length >= 2 ) {
-      ctx.strokeStyle = this.color;
-      ctx.lineWidth = 5;
+      this.ctx.strokeStyle = this.color;
+      this.ctx.lineWidth = 5;
       for (var i = 1; i < this.route.length; i+=3) {
         let a = this.route[i-1];
         let b = this.route[i];
-        ctx.beginPath();
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
-        ctx.stroke();
+        this.ctx.beginPath();
+        this.ctx.moveTo(a.x, a.y);
+        this.ctx.lineTo(b.x, b.y);
+        this.ctx.stroke();
       }
     }
   }
-  withinBounds(ctx) {
+  withinBounds() {
     return (
-      this.x+this.radius < ctx.canvas.width && this.x-this.radius > 0
-      && this.y+this.radius < ctx.canvas.height && this.y-this.radius > 0
+      this.x+this.radius < this.ctx.canvas.width && this.x-this.radius > 0
+      && this.y+this.radius < this.ctx.canvas.height && this.y-this.radius > 0
     )
   }
-  bounce(ctx) {
-    // if ( this.withinBounds(ctx) ) {
+  bounce() {
+    // if ( this.withinBounds() ) {
     //   console.log('within');
       if (
-        this.x+this.radius > ctx.canvas.width
+        this.x+this.radius > this.ctx.canvas.width
         || this.x-this.radius < 0
       ) {
         this.vector.dx *= -1;
       }
       if (
-        this.y+this.radius > ctx.canvas.height
+        this.y+this.radius > this.ctx.canvas.height
         || this.y-this.radius < 0
       ) {
         this.vector.dy *= -1;
       }
     // }
   }
-  move(ctx) {
+  move() {
     if (this.route.length >= 2) {
       this.activeMove();
       if (this.route.length === 2) {
         this.getPassiveVector();
       }
     } else {
-      this.passiveMove(ctx);
+      this.passiveMove();
     }
   }
   activeMove() {
@@ -271,8 +272,8 @@ class Plane {
       dy: ay-by
     };
   }
-  passiveMove(ctx) {
-    this.bounce(ctx);
+  passiveMove() {
+    this.bounce();
     this.x += this.vector.dx;
     this.y += this.vector.dy;
   }
@@ -287,7 +288,7 @@ class Plane {
     }
     if ( distance < this.radius + that.radius ) {
       this.changeImg(ctx, dead);
-      this.draw(ctx);
+      this.draw();
       this.vector = { dx:0, dy:0 };
       this.route = [];
       that.vector = { dx:0, dy:0 };
@@ -297,8 +298,10 @@ class Plane {
     return false;
   }
   changeImg(ctx, img) {
-    this.img = img;
-    this.draw(ctx)
+    if (this.img !== img) {
+      this.img = img;
+      this.draw()
+    }
   }
 }
 
