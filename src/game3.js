@@ -16,7 +16,10 @@ function tick() {
 }
 ticker = requestAnimationFrame(tick);
 
-var ready, activePlane, ctx, planes, lzs, score, img, dead, test, gameOver, happy, worried, dead, shocked;
+var ready, activePlane, ctx, planes, lzs, score, img,
+    test, gameOver, happy, worried, dead, shocked,
+    speedModifier=1;
+
 const colors = ['blue', 'red'];
 document.addEventListener('DOMContentLoaded', () => {
   happy = new Image(50, 50);
@@ -41,21 +44,41 @@ function imgCollect(n) {
     count++;
     if (count === n) {
       const canvas = document.getElementById("contentContainer");
-      canvas.addEventListener("mousedown", mousedownReset);
-      canvas.addEventListener("mouseup", () => ( activePlane = null ));
-      canvas.addEventListener("mousemove", buildRoute);
       ctx = canvas.getContext("2d");
-      planes = [];
-      planes.push( spawnPlane() );
-      planes.push( spawnPlane() );
-      lzs = spawnLZs(2);
-      score = 0;
+      newGame();
       ready = true;
     } else {
       return collector;
     }
   };
   return collector;
+}
+function newGame() {
+  gameOver = false;
+  ctx.canvas.removeEventListener("mousedown", newGame);
+  ctx.canvas.addEventListener("mousedown", mousedownReset);
+  ctx.canvas.addEventListener("mousedown", secretRegularSpeed);
+  ctx.canvas.addEventListener("mousedown", secretFasterSpeed);
+  ctx.canvas.addEventListener("mouseup", () => ( activePlane = null ));
+  ctx.canvas.addEventListener("mousemove", buildRoute);
+  planes = [];
+  planes.push( spawnPlane() );
+  planes.push( spawnPlane() );
+  lzs = spawnLZs(2);
+  score = 0;
+  speedModifier = 1;
+}
+function secretRegularSpeed(e) {
+  const { x, y } = getMousePos(e);
+  if ( x < 15 && y < 15 ) {
+    speedModifier = 1;
+  }
+}
+function secretFasterSpeed(e) {
+  const { x, y } = getMousePos(e);
+  if ( x > ctx.canvas.width-15 && y < 15 ) {
+    speedModifier += 1;
+  }
 }
 
 class LandingZone {
@@ -86,7 +109,7 @@ function drawScore() {
     ctx.font = "20px Arial";
     ctx.fillText(
       'click and drag the emoji to its color-matched landing pad',
-      ctx.canvas.width/2 ,40
+      ctx.canvas.width/2, 40
     );
   }
   if (gameOver) {
@@ -97,6 +120,13 @@ function drawScore() {
     ctx.font = "130px Arial";
     ctx.fillText('GAME',ctx.canvas.width/2, (ctx.canvas.height/2)-10);
     ctx.fillText('OVER',ctx.canvas.width/2, (ctx.canvas.height/2)+90);
+    ctx.fillStyle = 'white';
+    ctx.font = "20px Arial";
+    ctx.fillText(
+      'click anywhere to play again',
+      ctx.canvas.width/2,
+      ctx.canvas.height-40
+    );
   }
   ctx.globalAlpha = 1;
 }
@@ -139,7 +169,9 @@ function handleProximity(i) {
 
     if ( planes[i].collidesWith(planes[j]) ) {
       gameOver = true;
+      ctx.canvas.addEventListener("mousedown", newGame);
       ctx.canvas.removeEventListener("mousedown", mousedownReset);
+      ctx.canvas.removeEventListener("mouseup", () => ( activePlane = null ));
       ctx.canvas.removeEventListener("mousemove", buildRoute);
       planes[i].changeImg(dead);
       planes[i].vector = { dx:0, dy:0 };
@@ -226,10 +258,11 @@ class Plane {
     this.x = options.x;
     this.y = options.y;
     this.route = [];
-    this.speed = options.speed || 1;
+    this.speed = (options.speed || 1);
     this.vector = this.randomVector();
     this.color = options.color;
   }
+
   randomVector() {
     const angle = getRandomFloat(0, 2*Math.PI);
     var dx = this.speed * Math.cos(angle);
@@ -310,25 +343,30 @@ class Plane {
   }
   move() {
     if (this.route.length >= 2) {
+      this.getPassiveVector();
       this.activeMove();
-      if (this.route.length === 2) {
-        this.getPassiveVector();
-      }
+      // if (this.route.length === 2) {
+        // this.getPassiveVector();
+      // }
     } else {
       this.passiveMove();
     }
   }
   activeMove() {
-    this.route.splice(0, this.speed);
+    this.route.splice(0, this.speed * speedModifier);
     const { x, y } = this.route[0];
     this.x = x;
     this.y = y;
   }
   getPassiveVector() {
-    const ax = this.route[1].x;
-    const bx = this.route[0].x;
-    const by = this.route[0].y;
-    const ay = this.route[1].y;
+    // const ax = this.route[1].x;
+    // const bx = this.route[0].x;
+    // const by = this.route[0].y;
+    // const ay = this.route[1].y;
+    const ax = this.route[this.route.length-1].x;
+    const bx = this.route[this.route.length-2].x;
+    const by = this.route[this.route.length-2].y;
+    const ay = this.route[this.route.length-1].y;
     this.vector = {
       dx: ax-bx,
       dy: ay-by
@@ -337,8 +375,8 @@ class Plane {
   passiveMove() {
     // console.log(`withinBounds = ${this.withinBounds()}`);
     this.bounce();
-    this.x += this.vector.dx;
-    this.y += this.vector.dy;
+    this.x += this.vector.dx * speedModifier;
+    this.y += this.vector.dy * speedModifier;
   }
   collidesWith(that) {
     var distance = distanceBetween(this, that);
@@ -399,7 +437,7 @@ function buildRoute(e) {
     const distance = distanceBetween(lastPoint, currentPoint);
     const angle = angleBetween(lastPoint, currentPoint);
 
-    for (var i = 0; i < distance; i++) {
+    for (var i = 0; i < distance; i+=activePlane.speed) {
       let x = lastPoint.x + (Math.sin(angle) * i);
       let y = lastPoint.y + (Math.cos(angle) * i);
 
