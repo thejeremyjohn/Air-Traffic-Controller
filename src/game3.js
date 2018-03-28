@@ -199,13 +199,29 @@ function getRandomFloat(min, max) {
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 }
-
+var planeTypes = {
+  regular: {
+    img: happy,
+    radius: 25,
+    speed: 1
+  },
+  big: {
+    // img: monopolyguy,
+    radius: 50,
+    speed: 0.75
+  },
+  fast: {
+    // img:
+    radius: 25,
+    speed: 1.25
+  }
+};
 function spawnPlane() {
   const color = colors[Math.floor(Math.random()*colors.length)];
   const radius = happy.width/2;
-  var x = getRandomInt(0+radius, ctx.canvas.width-radius);
-  var y = getRandomInt(0+radius, ctx.canvas.height-radius);
-  // var { x, y } = spawnPoint(ctx)
+  // var x = getRandomInt(0+radius, ctx.canvas.width-radius);
+  // var y = getRandomInt(0+radius, ctx.canvas.height-radius);
+  var { x, y } = spawnPoint(ctx);
   var p = { radius, x, y };
 
   var closeCall = true;
@@ -214,9 +230,9 @@ function spawnPlane() {
     for (var i = 0; i < planes.length; i++) {
       if (planes[i].inVicinityOf(p)) {
         // console.log(`${i} this would be a closeCall`);
-        x = getRandomInt(0+radius, ctx.canvas.width-radius);
-        y = getRandomInt(0+radius, ctx.canvas.height-radius);
-        // var { x, y } = spawnPoint(ctx)
+        // x = getRandomInt(0+radius, ctx.canvas.width-radius);
+        // y = getRandomInt(0+radius, ctx.canvas.height-radius);
+        var { x, y } = spawnPoint(ctx);
         p = { radius, x, y };
         closeCall = true;
         break;
@@ -252,6 +268,7 @@ function spawnLZs(n) {
 
 class Plane {
   constructor(options) {
+    this.withinBounds = false;
     this.ctx = options.ctx;
     this.img = options.img;
     this.radius = options.img.width/2;
@@ -294,7 +311,11 @@ class Plane {
         this.ctx.stroke();
       }
     }
-    this.ctx.fillStyle = this.color;
+    if (!this.withinBounds) {
+      this.ctx.fillStyle = 'grey';
+    } else {
+      this.ctx.fillStyle = this.color;
+    }
     this.ctx.beginPath();
     this.ctx.arc(this.x, this.y, this.radius+2, 0, 2 * Math.PI);
     this.ctx.fill();
@@ -304,42 +325,33 @@ class Plane {
       this.y-(this.img.height/2),
       this.img.width, this.img.height
     );
-    // this.ctx.drawImage(
-    //   this.img,
-    //   this.x-(this.img.width/2),
-    //   this.y-(this.img.height/2),
-    //   this.img.width, this.img.height
-    // );
-    // this.ctx.strokeStyle=this.color;
-    // this.ctx.lineWidth = 3;
-    // this.ctx.beginPath();
-    // this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-    // this.ctx.stroke();
   }
-  withinBounds() {
+  checkWithinBounds() {
     return (
-         this.x-this.radius-1 > 0
-      && this.x+this.radius+1 < this.ctx.canvas.width
-      && this.y-this.radius-1 > 0
-      && this.y+this.radius+1 < this.ctx.canvas.height
+         this.x-this.radius >= 0
+      && this.x+this.radius <= this.ctx.canvas.width
+      && this.y-this.radius >= 0
+      && this.y+this.radius <= this.ctx.canvas.height
     );
   }
   bounce() {
-    // var inbounds = this.withinBounds()
-    // if ( inbounds ) {
+    if (!this.withinBounds) {
+      this.withinBounds = this.checkWithinBounds();
+    }
+    if ( this.withinBounds ) {
       if (
-           this.x+this.radius > this.ctx.canvas.width
-        || this.x-this.radius < 0
+           this.x-this.radius <= 0
+        || this.x+this.radius >= this.ctx.canvas.width
       ) {
         this.vector.dx *= -1;
       }
       if (
-           this.y+this.radius > this.ctx.canvas.height
-        || this.y-this.radius < 0
+           this.y-this.radius <= 0
+        || this.y+this.radius >= this.ctx.canvas.height
       ) {
         this.vector.dy *= -1;
       }
-    // }
+    }
   }
   move() {
     if (this.route.length >= 2) {
@@ -373,7 +385,6 @@ class Plane {
     };
   }
   passiveMove() {
-    // console.log(`withinBounds = ${this.withinBounds()}`);
     this.bounce();
     this.x += this.vector.dx * speedModifier;
     this.y += this.vector.dy * speedModifier;
@@ -381,7 +392,13 @@ class Plane {
   collidesWith(that) {
     var distance = distanceBetween(this, that);
     if ( distance < this.radius + that.radius ) {
-      return true;
+      if (that instanceof Plane) {
+        if (this.withinBounds && that.withinBounds) {
+          return true;
+        }
+      } else {
+        return true;
+      }
     }
     return false;
   }

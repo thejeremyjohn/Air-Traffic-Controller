@@ -1,6 +1,6 @@
 ### Background
 
-Air Traffic Controller is based on the existing mobile title Air Control. The game allows 1-player interactions with a rectangular board. 2D-shapes (airplanes with circular collision boxes) move in from outside the board, approaching in a straight line from some random vector. Some planes travel faster than others and/or have a different size.
+Traffic Controller is based on the existing mobile title Air Control. The game allows 1-player interactions with a rectangular board. 2D-shapes (emojis with circular collision boxes) move in from outside the board, approaching in a straight line from some random vector. Some planes travel faster than others and/or have a different size.
 
 There are two to three designated spots on the board where planes can land (landing strips for planes / helipads for helicopters). When a plane enroute collides with a landing area, it lands and is safe, contributing +1 the player's score. At all other times a plane has the potential to collide with another plane which would trigger game over.
 
