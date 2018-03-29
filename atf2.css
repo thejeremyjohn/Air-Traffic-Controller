@@ -24,7 +24,8 @@ body {
 #contentContainer {
   border-radius: 5px;
   border: 5px solid #24248f;
-  background-color:#404040;
+  /* background-color:#404040; */
+  background-color:#262626;
 }
 h2 {
   color: white;

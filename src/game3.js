@@ -1,24 +1,38 @@
-var ticker;
+var ticker, accTime=0, lastTime=Date.now(), timeInterval=15;
 function tick() {
   if (ready) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    lzs.forEach( lz => {
-      lz.draw(ctx);
-    });
-    for (var i = 0; i < planes.length; i++) {
-      planes[i].draw();
-      planes[i].move();
-      handleProximity(i);
+    const deltaTime = Date.now() - lastTime;
+    // console.log(deltaTime);
+    lastTime = Date.now();
+    accTime += deltaTime;
+
+    if (accTime >= timeInterval) {
+      // console.log(accTime);
+      accTime = 0;
+      ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+      lzs.forEach( lz => {
+        lz.draw(ctx);
+      });
+      for (var i = 0; i < planes.length; i++) {
+        planes[i].draw();
+        planes[i].move();
+        handleProximity(i);
+        if (planes[i].wayOff()) {
+          planes.splice(i, 1);
+          console.log('deleted wayOff plane');
+          planes.push( spawnPlane() );
+        }
+      }
+      drawScore();
     }
-    drawScore();
   }
   ticker = requestAnimationFrame(tick);
 }
 ticker = requestAnimationFrame(tick);
 
-var ready, activePlane, ctx, planes, lzs, score, img,
+var ready, selectedPlane, ctx, planes, lzs, score, img,
     test, gameOver, happy, worried, dead, shocked,
-    speedModifier=1;
+    timeInterval=15, mousePos;
 
 const colors = ['blue', 'red'];
 document.addEventListener('DOMContentLoaded', () => {
@@ -56,28 +70,35 @@ function imgCollect(n) {
 function newGame() {
   gameOver = false;
   ctx.canvas.removeEventListener("mousedown", newGame);
-  ctx.canvas.addEventListener("mousedown", mousedownReset);
+  ctx.canvas.addEventListener("mousedown", selectPlane);
+  document.addEventListener("keydown", selectPlane);
   ctx.canvas.addEventListener("mousedown", secretRegularSpeed);
-  ctx.canvas.addEventListener("mousedown", secretFasterSpeed);
-  ctx.canvas.addEventListener("mouseup", () => ( activePlane = null ));
+  ctx.canvas.addEventListener("mousedown", secretSlowerSpeed);
+  // ctx.canvas.addEventListener("mouseup", () => ( selectedPlane = null ));
+  // ctx.canvas.addEventListener("keyup", () => ( selectedPlane = null ));
+  ctx.canvas.addEventListener("mouseup", deselectPlane);
+  ctx.canvas.addEventListener("keyup", deselectPlane);
   ctx.canvas.addEventListener("mousemove", buildRoute);
+  ctx.canvas.addEventListener("mousemove", getMousePos);
   planes = [];
   planes.push( spawnPlane() );
   planes.push( spawnPlane() );
   lzs = spawnLZs(2);
   score = 0;
-  speedModifier = 1;
+  timeInterval = 15;
 }
 function secretRegularSpeed(e) {
-  const { x, y } = getMousePos(e);
-  if ( x < 15 && y < 15 ) {
-    speedModifier = 1;
+  // const { x, y } = getMousePos(e);
+  // if ( x < 15 && y < 15 ) {
+  if ( mousePos.x < 15 && mousePos.y < 15 ) {
+    timeInterval = 15;
   }
 }
-function secretFasterSpeed(e) {
-  const { x, y } = getMousePos(e);
-  if ( x > ctx.canvas.width-15 && y < 15 ) {
-    speedModifier += 1;
+function secretSlowerSpeed(e) {
+  // const { x, y } = getMousePos(e);
+  if ( mousePos.x > ctx.canvas.width-15 && mousePos.y < 15 ) {
+    timeInterval += timeInterval;
+    console.log(timeInterval);
   }
 }
 
@@ -170,8 +191,8 @@ function handleProximity(i) {
     if ( planes[i].collidesWith(planes[j]) ) {
       gameOver = true;
       ctx.canvas.addEventListener("mousedown", newGame);
-      ctx.canvas.removeEventListener("mousedown", mousedownReset);
-      ctx.canvas.removeEventListener("mouseup", () => ( activePlane = null ));
+      ctx.canvas.removeEventListener("mousedown", selectPlane);
+      ctx.canvas.removeEventListener("mouseup", () => ( selectedPlane = null ));
       ctx.canvas.removeEventListener("mousemove", buildRoute);
       planes[i].changeImg(dead);
       planes[i].vector = { dx:0, dy:0 };
@@ -188,7 +209,6 @@ function spawnPoint(ctx) {
     [[-5, ctx.canvas.width-5], [ctx.canvas.height+5, ctx.canvas.height+55]]
   ];
   const area = spawnAreas[Math.floor(Math.random()*spawnAreas.length)];
-  console.log(area);
   const [x, y] = area.map( range => getRandomInt(...range) );
   return { x, y };
 }
@@ -266,12 +286,21 @@ function spawnLZs(n) {
   return LZArr;
 }
 
+function checkWithinBounds(point, r=0) {
+  return (
+       point.x-r >= 0
+    && point.x+r <= ctx.canvas.width
+    && point.y-r >= 0
+    && point.y+r <= ctx.canvas.height
+  );
+}
+
 class Plane {
   constructor(options) {
     this.withinBounds = false;
     this.ctx = options.ctx;
     this.img = options.img;
-    this.radius = options.img.width/2;
+    this.radius = 2 + (options.img.width/2);
     this.x = options.x;
     this.y = options.y;
     this.route = [];
@@ -302,23 +331,31 @@ class Plane {
     if ( this.route.length >= 2 ) {
       this.ctx.strokeStyle = this.color;
       this.ctx.lineWidth = 3;
-      for (var i = 1; i < this.route.length; i+=7) {
-        let a = this.route[i-1];
-        let b = this.route[i];
-        this.ctx.beginPath();
-        this.ctx.moveTo(a.x, a.y);
-        this.ctx.lineTo(b.x, b.y);
-        this.ctx.stroke();
+      // for (var i = 1; i < this.route.length; i++) {
+      for (var i = 1; i < this.route.length; i+=10) {
+        // if ( i%14 ) {
+          let a = this.route[i-5] || this;
+          let b = this.route[i];
+          this.ctx.beginPath();
+          this.ctx.moveTo(a.x, a.y);
+          this.ctx.lineTo(b.x, b.y);
+          this.ctx.stroke();
+        // }
       }
     }
     if (!this.withinBounds) {
-      this.ctx.fillStyle = 'grey';
+      this.ctx.strokeStyle = 'grey';
+      // this.ctx.beginPath();
+      // this.ctx.arc(this.x, this.y, this.radius+2, 0, 2 * Math.PI);
     } else {
-      this.ctx.fillStyle = this.color;
+      this.ctx.strokeStyle = this.color;
     }
+    this.ctx.fillStyle = this.color;
+    this.ctx.lineWidth = 2.5;
     this.ctx.beginPath();
-    this.ctx.arc(this.x, this.y, this.radius+2, 0, 2 * Math.PI);
+    this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
     this.ctx.fill();
+    this.ctx.stroke();
     this.ctx.drawImage(
       this.img,
       this.x-(this.img.width/2),
@@ -326,18 +363,21 @@ class Plane {
       this.img.width, this.img.height
     );
   }
-  checkWithinBounds() {
-    return (
-         this.x-this.radius >= 0
-      && this.x+this.radius <= this.ctx.canvas.width
-      && this.y-this.radius >= 0
-      && this.y+this.radius <= this.ctx.canvas.height
-    );
+  wayOff() {
+   if (
+        this.x < 0-55
+     || this.x > this.ctx.canvas.width+55
+   ) {
+     return true;
+   }
+   if (
+        this.y < 0-55
+     || this.y > this.ctx.canvas.height+55
+   ) {
+     return true;
+   }
   }
   bounce() {
-    if (!this.withinBounds) {
-      this.withinBounds = this.checkWithinBounds();
-    }
     if ( this.withinBounds ) {
       if (
            this.x-this.radius <= 0
@@ -354,6 +394,9 @@ class Plane {
     }
   }
   move() {
+    if (!this.withinBounds) {
+      this.withinBounds = checkWithinBounds(this, this.radius);
+    }
     if (this.route.length >= 2) {
       this.getPassiveVector();
       this.activeMove();
@@ -365,7 +408,7 @@ class Plane {
     }
   }
   activeMove() {
-    this.route.splice(0, this.speed * speedModifier);
+    this.route.splice(0, this.speed);
     const { x, y } = this.route[0];
     this.x = x;
     this.y = y;
@@ -386,8 +429,8 @@ class Plane {
   }
   passiveMove() {
     this.bounce();
-    this.x += this.vector.dx * speedModifier;
-    this.y += this.vector.dy * speedModifier;
+    this.x += this.vector.dx;
+    this.y += this.vector.dy;
   }
   collidesWith(that) {
     var distance = distanceBetween(this, that);
@@ -410,7 +453,7 @@ class Plane {
     return false;
   }
   inVicinityOf(that) {
-    var distance = distanceBetween(this, that) - 75;
+    var distance = distanceBetween(this, that) - 100;
     if ( distance < this.radius + that.radius ) {
       return true;
     }
@@ -423,15 +466,27 @@ class Plane {
     }
   }
 }
+function deselectPlane() {
+  console.log('deselectPlane was here');
+  selectedPlane = null;
+}
 
-function mousedownReset(e) {
-  const mouse = getMousePos(e);
-  console.log(`mousedown @ ${mouse.x}, ${mouse.y}`);
+function selectPlane(e) {
+  if (mousePos === undefined) {
+    mousePos = getMousePos(e);
+  }
+  console.log('selectPlane was called');
+  if (e.keyCode === 32 || e.key === ' ') {
+    console.log('selectPlane was called with spacebar');
+  }
+  // const mouse = getMousePos(e);
+  // console.log(`mousedown @ ${mouse.x}, ${mouse.y}`);
+  console.log(`mousedown @ ${mousePos.x}, ${mousePos.y}`);
   planes.forEach( plane => {
-    if ( Math.abs(mouse.x-plane.x) < plane.radius
-    && Math.abs(mouse.y-plane.y) < plane.radius ) {
-      activePlane = plane;
+    if ( Math.abs(mousePos.x-plane.x) <= plane.radius
+      && Math.abs(mousePos.y-plane.y) <= plane.radius ) {
       plane.route = [];
+      selectedPlane = plane;
     }
   });
 }
@@ -439,29 +494,36 @@ function getMousePos(e) {
   const parentPos = getPosition(e.currentTarget);
   const x = e.clientX - parentPos.x;
   const y = e.clientY - parentPos.y;
-  return { x, y };
+  // return { x, y };
+  mousePos = { x, y };
 }
 
 function buildRoute(e) {
-  if (activePlane) {
+  if (selectedPlane) {
     var lastPoint;
-    if (activePlane.route.length===0) {
-      lastPoint = activePlane;
-    } else {
-      lastPoint = activePlane.route[activePlane.route.length-1];
-    }
-    const currentPoint = getMousePos(e);
+
+      lastPoint = selectedPlane.route[selectedPlane.route.length-1] || selectedPlane;
+
+    // const currentPoint = getMousePos(e);
+    const currentPoint = mousePos;
     const distance = distanceBetween(lastPoint, currentPoint);
     const angle = angleBetween(lastPoint, currentPoint);
 
-    for (var i = 0; i < distance; i+=activePlane.speed) {
+    for (var i = 0; i < distance; i+=selectedPlane.speed) {
       let x = lastPoint.x + (Math.sin(angle) * i);
       let y = lastPoint.y + (Math.cos(angle) * i);
 
-      let a = activePlane.route[activePlane.route.length-1] || lastPoint;
+      let a = selectedPlane.route[selectedPlane.route.length-1] || lastPoint;
       let b = { x, y };
+
+      // var wasWithinBounds = checkWithinBounds(a, selectedPlane.radius);
+      // var nowOutOfBounds = checkWithinBounds(b, selectedPlane.radius);
+      // if (wasWithinBounds && nowOutOfBounds) {
+      //   selectedPlane = null;
+      //   // return;
+      // }
       if ( distanceBetween(a, b) > 0 ) {
-        activePlane.route.push({ x, y });
+        selectedPlane.route.push({ x, y });
       }
     }
   }
