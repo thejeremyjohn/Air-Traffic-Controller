@@ -133,14 +133,38 @@ function drawScore() {
   ctx.font = "20px Arial";
   ctx.fillText(score, ctx.canvas.width/2, ctx.canvas.height-10);
   ctx.globalAlpha = 0.5;
-  if (score<3) {
-    ctx.font = "20px Arial";
-    ctx.fillText(
-      'click and drag the emoji to its color-matched landing pad',
-      ctx.canvas.width/2, 40
-    );
+  ctx.textAlign='left';
+  ctx.font = "20px Arial";
+  if (score<=2) {
+    ctx.fillText( 'click and drag an emoji to draw its path home...', 20, 40 );
+  }
+  if (score >= 2 && score <= 4) {
+    ctx.fillText( 'you can use SPACEBAR instead of LMB if you prefer...', 20, 60 );
+  }
+  if (score >= 3 && score <= 4) {
+    // ctx.fillText( 'they don\'t mind...', 103, 80 );
+    ctx.fillText( 'they don\'t mind...', 20, 80 );
+  }
+  if (score >= 4 && score <= 5) {
+    ctx.fillText( 'just don\'t let them collide...', 20, 100 );
+  }
+  if (score >= 5 && score <= 6) {
+    ctx.fillText( 'emojis HATE collisions...', 20, 120 );
+  }
+  if (score >= 6 && score <= 6) {
+    ctx.fillText( 'also they\'ll die', 245, 120 );
+  }
+  if (score >= 7 && score <= 8) {
+    ctx.fillText( 'bouncing off walls is cool though...', 20, 140 );
+  }
+  if (score >= 8 && score <= 8) {
+    ctx.fillText( '(not a reccommended strategy)...', 20, 160 );
+  }
+  if (score >= 9 && score <= 10) {
+    ctx.fillText( 'ENJOY :]', 20, 190 );
   }
   if (gameOver) {
+    ctx.textAlign='center';
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     ctx.globalAlpha = 1;
@@ -489,12 +513,6 @@ function selectPlane(e) {
   if (mousePos === undefined) {
     mousePos = getMousePos(e);
   }
-  // console.log('selectPlane was called');
-  // if (e.keyCode === 32 || e.key === ' ') {
-  //   console.log('selectPlane was called with spacebar');
-  // }
-  // const mouse = getMousePos(e);
-  // console.log(`mousedown @ ${mouse.x}, ${mouse.y}`);
   console.log(`mousedown @ ${mousePos.x}, ${mousePos.y}`);
   planes.forEach( plane => {
     if ( Math.abs(mousePos.x-plane.x) <= plane.radius
