@@ -67,26 +67,24 @@ function imgCollect(n) {
   };
   return collector;
 }
+var keyDown = false;
 function newGame() {
   gameOver = false;
   ctx.canvas.removeEventListener("mousedown", newGame);
   ctx.canvas.addEventListener("mousedown", selectPlane);
-  // document.addEventListener("keydown", selectPlane);
   document.body.onkeydown = (e) => {
-    if(e.keyCode === 32 || e.key === ' '){
-        // console.log("Space pressed!");
-        selectPlane(e);
+    if(keyDown===false && (e.keyCode === 32 || e.key === ' ')) {
+      keyDown = true; selectPlane(e);
     }
-  };
-  document.body.onkeyup = (e) => {
-    if(e.keyCode === 32 || e.key === ' ') deselectPlane();
   };
   ctx.canvas.addEventListener("mousedown", secretRegularSpeed);
   ctx.canvas.addEventListener("mousedown", secretSlowerSpeed);
-  // ctx.canvas.addEventListener("mouseup", () => ( selectedPlane = null ));
-  // ctx.canvas.addEventListener("keyup", () => ( selectedPlane = null ));
   ctx.canvas.addEventListener("mouseup", deselectPlane);
-  // ctx.canvas.addEventListener("keyup", deselectPlane);
+  document.body.onkeyup = (e) => {
+    if(e.keyCode === 32 || e.key === ' ') {
+      keyDown = false; deselectPlane();
+    }
+  };
   ctx.canvas.addEventListener("mousemove", buildRoute);
   ctx.canvas.addEventListener("mousemove", getMousePos);
   planes = [];
@@ -491,10 +489,10 @@ function selectPlane(e) {
   if (mousePos === undefined) {
     mousePos = getMousePos(e);
   }
-  console.log('selectPlane was called');
-  if (e.keyCode === 32 || e.key === ' ') {
-    console.log('selectPlane was called with spacebar');
-  }
+  // console.log('selectPlane was called');
+  // if (e.keyCode === 32 || e.key === ' ') {
+  //   console.log('selectPlane was called with spacebar');
+  // }
   // const mouse = getMousePos(e);
   // console.log(`mousedown @ ${mouse.x}, ${mouse.y}`);
   console.log(`mousedown @ ${mousePos.x}, ${mousePos.y}`);
