@@ -71,13 +71,22 @@ function newGame() {
   gameOver = false;
   ctx.canvas.removeEventListener("mousedown", newGame);
   ctx.canvas.addEventListener("mousedown", selectPlane);
-  document.addEventListener("keydown", selectPlane);
+  // document.addEventListener("keydown", selectPlane);
+  document.body.onkeydown = (e) => {
+    if(e.keyCode === 32 || e.key === ' '){
+        // console.log("Space pressed!");
+        selectPlane(e);
+    }
+  };
+  document.body.onkeyup = (e) => {
+    if(e.keyCode === 32 || e.key === ' ') deselectPlane();
+  };
   ctx.canvas.addEventListener("mousedown", secretRegularSpeed);
   ctx.canvas.addEventListener("mousedown", secretSlowerSpeed);
   // ctx.canvas.addEventListener("mouseup", () => ( selectedPlane = null ));
   // ctx.canvas.addEventListener("keyup", () => ( selectedPlane = null ));
   ctx.canvas.addEventListener("mouseup", deselectPlane);
-  ctx.canvas.addEventListener("keyup", deselectPlane);
+  // ctx.canvas.addEventListener("keyup", deselectPlane);
   ctx.canvas.addEventListener("mousemove", buildRoute);
   ctx.canvas.addEventListener("mousemove", getMousePos);
   planes = [];
@@ -219,47 +228,54 @@ function getRandomFloat(min, max) {
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 }
-var planeTypes = {
-  regular: {
-    img: happy,
-    radius: 25,
-    speed: 1
-  },
-  big: {
-    // img: monopolyguy,
-    radius: 50,
-    speed: 0.75
-  },
-  fast: {
-    // img:
-    radius: 25,
-    speed: 1.25
-  }
-};
 function spawnPlane() {
+  var planeTypes = {
+    regular: {
+      // img: happy,
+      img: Object.assign(happy, {width:50, height:50}),
+      radius: 27,
+      // radius: 2 + (planeTypes.regular.img.width/2),
+      speed: 1
+    },
+    big: {
+      // img: happy,
+      img: Object.assign({}, happy, {width:100, height:100}),
+      // img: monopolyguy,
+      radius: 52,
+      // radius: 2 + (happy.width/2),
+      speed: 0.75
+    },
+    fast: {
+      // img: happy,
+      img: Object.assign({}, happy, {width:25, height:25}),
+      // img:
+      radius: 14.5,
+      // radius: 2 + (happy.width/2),
+      speed: 1.25
+    }
+  };
   const color = colors[Math.floor(Math.random()*colors.length)];
-  const radius = happy.width/2;
-  // var x = getRandomInt(0+radius, ctx.canvas.width-radius);
-  // var y = getRandomInt(0+radius, ctx.canvas.height-radius);
+  // const radius = happy.width/2;
+  var { img, radius, speed } = planeTypes['regular'];
+  // var { img, radius, speed } = planeTypes['big'];
+  // var { img, radius, speed } = planeTypes[Object.keys(planeTypes)[Math.floor(Math.random()*Object.keys(planeTypes).length)]];
   var { x, y } = spawnPoint(ctx);
-  var p = { radius, x, y };
-
+  // var p = { radius, x, y };
+  var p = { img, radius, speed, x, y };
   var closeCall = true;
   while (closeCall) {
     closeCall = false;
     for (var i = 0; i < planes.length; i++) {
       if (planes[i].inVicinityOf(p)) {
-        // console.log(`${i} this would be a closeCall`);
-        // x = getRandomInt(0+radius, ctx.canvas.width-radius);
-        // y = getRandomInt(0+radius, ctx.canvas.height-radius);
         var { x, y } = spawnPoint(ctx);
-        p = { radius, x, y };
+        // p = { radius, x, y };
+        var p = { img, radius, speed, x, y };
         closeCall = true;
         break;
       }
     }
   }
-  return new Plane({ ctx, img: happy, color, x, y });
+  return new Plane({ ctx, img, color, x, y });
 }
 // function spawnPlanes(n, img) {
 //   const planesArr = [];
@@ -467,7 +483,7 @@ class Plane {
   }
 }
 function deselectPlane() {
-  console.log('deselectPlane was here');
+  console.log('deselectPlane was called');
   selectedPlane = null;
 }
 
