@@ -1,28 +1,27 @@
-var ticker, accTime=0, lastTime=Date.now(), timeInterval=15;
+var ticker, accTime=0, lastTime=Date.now(), desiredTimeInterval=15, timeInterval=desiredTimeInterval;
 function tick() {
   if (ready) {
     const deltaTime = Date.now() - lastTime;
-    // console.log(deltaTime);
     lastTime = Date.now();
     accTime += deltaTime;
-
     if (accTime >= timeInterval) {
-      // console.log(accTime);
       accTime = 0;
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       lzs.forEach( lz => {
         lz.draw(ctx);
       });
       for (var i = 0; i < emojis.length; i++) {
-        emojis[i].draw();
-        emojis[i].move();
         handleProximity(i);
+        if (!emojis[i]) continue;
+        emojis[i].move();
+        emojis[i].draw();
         if (emojis[i].wayOff()) {
           emojis.splice(i, 1);
           console.log('deleted wayOff emoji');
           emojis.push( spawnEmoji() );
         }
       }
+      // smartSpawning();
       drawScore();
     }
   }
@@ -38,14 +37,14 @@ var ready, selectedEmoji, ctx, emojis, lzs, score,
 
 const colors = ['blue', 'red'];
 document.addEventListener('DOMContentLoaded', () => {
-  happy = new Image(50, 50);
-  worried = new Image(50, 50);
-  dead = new Image(50, 50);
-  shocked = new Image(50, 50);
-  bigHappy = new Image(100, 100);
-  bigWorried = new Image(100, 100);
-  bigDead = new Image(100, 100);
-  bigShocked = new Image(100, 100);
+  happy = new Image(47, 47);
+  worried = new Image(47, 47);
+  dead = new Image(47, 47);
+  shocked = new Image(47, 47);
+  bigHappy = new Image(97, 97);
+  bigWorried = new Image(97, 97);
+  bigDead = new Image(97, 97);
+  bigShocked = new Image(97, 97);
   happy.src = "./emojis/eyeglasses-black-face-emoticon.png";
   dead.src = "./emojis/astonished-black-emoticon-face.png";
   worried.src = "./emojis/worried-black-face.png";
@@ -68,14 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
   emojiTypes = {
     regular: {
       faces: {happy, worried, dead, shocked},
-      radius: 27,
+      radius: 25,
       speed: 1
     },
     big: {
       faces: {happy:bigHappy, worried:bigWorried, dead:bigDead, shocked:bigShocked},
-      radius: 52,
-      // speed: 0.75
-      speed: 1
+      radius: 50,
+      speed: .65
     }
   };
 });
@@ -116,22 +114,18 @@ function newGame() {
   ctx.canvas.addEventListener("mousemove", buildRoute);
   ctx.canvas.addEventListener("mousemove", getMousePos);
   emojis = [];
-  // console.log('spawning 1 emoji');
   emojis.push( spawnEmoji() );
   emojis.push( spawnEmoji() );
   lzs = spawnLZs(2);
   score = 0;
-  timeInterval = 15;
+  timeInterval = desiredTimeInterval;
 }
 function secretRegularSpeed(e) {
-  // const { x, y } = getMousePos(e);
-  // if ( x < 15 && y < 15 ) {
   if ( mousePos.x < 15 && mousePos.y < 15 ) {
-    timeInterval = 15;
+    timeInterval = desiredTimeInterval;
   }
 }
 function secretSlowerSpeed(e) {
-  // const { x, y } = getMousePos(e);
   if ( mousePos.x > ctx.canvas.width-15 && mousePos.y < 15 ) {
     timeInterval += timeInterval;
     console.log(timeInterval);
@@ -171,7 +165,6 @@ function drawScore() {
     ctx.fillText( 'you can use SPACEBAR instead of LMB if you prefer...', 20, 60 );
   }
   if (score >= 3 && score <= 4) {
-    // ctx.fillText( 'they don\'t mind...', 103, 80 );
     ctx.fillText( 'they don\'t mind...', 20, 80 );
   }
   if (score >= 4 && score <= 5) {
@@ -211,24 +204,31 @@ function drawScore() {
   }
   ctx.globalAlpha = 1;
 }
+// function smartSpawning() {
+//   if (score < 10) {
+//     console.log('spawning');
+//     emojis.push( spawnEmoji() );
+//   } else {
+//     while ( emojis.length < Math.floor(score/5) ) {
+//       console.log('spawning');
+//       emojis.push( spawnEmoji() );
+//     }
+//   }
+// }
 
 function handleProximity(i) {
-  if ( emojis[i].route.length >= 2 ) {
+  if ( emojis[i].route.length >= 2 && !emojis[i].lz ) {
     for (var lzi = 0; lzi < lzs.length; lzi++) {
       if ( emojis[i].color === lzs[lzi].color
       && emojis[i].collidesWith(lzs[lzi]) ) {
         score++;
+        emojis[i].lz = lzs[lzi];
         console.log( 'emoji landed' );
         emojis.splice(i, 1);
         if (score < 10) {
-          emojis.push( spawnEmoji() );
           console.log('spawning');
+          emojis.push( spawnEmoji() );
         } else {
-          // const times = 1;
-          // const times = getRandomInt(1,3);
-          // for (var i = 0; i < times; i++) {
-          //   emojis.push( spawnEmoji() );
-          // }
           while ( emojis.length < Math.floor(score/5) ) {
             console.log('spawning');
             emojis.push( spawnEmoji() );
@@ -237,17 +237,14 @@ function handleProximity(i) {
         return;
       }
     }
-  }
-
+  } else if (emojis[i].radius <= 5) emojis.splice(i, 1);
   for (var j = 0; j < emojis.length; j++) {
     if ( i === j ) continue;
-
     if ( emojis[i].nearlyCollidesWith(emojis[j]) ) {
       emojis[i].changeFace(emojis[i].faces.worried);
     } else {
       emojis[i].changeFace(emojis[i].faces.happy);
     }
-
     if ( emojis[i].collidesWith(emojis[j]) ) {
       gameOver = true;
       ctx.canvas.addEventListener("mousedown", newGame);
@@ -311,8 +308,8 @@ function spawnEmoji() {
 function spawnLZs(n) {
   const LZArr = [];
   for (var i = 0; i < colors.length; i++) {
-    const x = getRandomInt(0+25, ctx.canvas.width-25);
-    const y = getRandomInt(0+25, ctx.canvas.height-25);
+    const x = getRandomInt(100, ctx.canvas.width-100);
+    const y = getRandomInt(100, ctx.canvas.height-100);
     LZArr.push( new LandingZone(
       { radius:25, color: colors[i], x, y }
     ));
@@ -320,39 +317,47 @@ function spawnLZs(n) {
   return LZArr;
 }
 
-function checkWithinBounds(point, r=0) {
+function checkWithinBounds(point, radius=0) {
   return (
-       point.x-r >= 0
-    && point.x+r <= ctx.canvas.width
-    && point.y-r >= 0
-    && point.y+r <= ctx.canvas.height
+       point.x-radius >= 0
+    && point.x+radius <= ctx.canvas.width
+    && point.y-radius >= 0
+    && point.y+radius <= ctx.canvas.height
   );
 }
 
 class Emoji {
   constructor(options) {
     this.withinBounds = false;
+    this.canCollide = false;
     this.ctx = options.ctx;
     this.faces = options.faces;
-    // this.type = options.type;
     this.face = options.faces.happy;
-    // this.face = this.type.face;
-    // this.radius = 2 + (options.face.width/2);
-    // this.radius = this.type.radius;
     this.radius = options.radius;
     this.x = options.x;
     this.y = options.y;
     this.route = [];
     this.speed = (options.speed || 1);
-    // this.speed = this.type.speed;
     this.vector = this.randomVector();
     this.color = options.color;
+    this.lz = null;
   }
 
+  land(lz) {
+    this.route = [];
+    console.log('land was callled');
+    this.canCollide = false;
+    const angle = angleBetween(this, lz);
+    this.x += Math.sin(angle) * this.speed;
+    this.y += Math.cos(angle) * this.speed;
+    this.radius -= 0.1;
+    this.face.width -= 0.1;
+    this.face.height -= 0.1;
+  }
   randomVector() {
     const angle = getRandomFloat(0, 2*Math.PI);
-    var dx = this.speed * Math.cos(angle);
-    var dy = this.speed * Math.sin(angle);
+    var dx = Math.cos(angle) * this.speed;
+    var dy = Math.sin(angle) * this.speed;
     const mx = this.ctx.canvas.width/2;
     const my = this.ctx.canvas.height/2;
     if (this.x >= mx) {
@@ -370,28 +375,23 @@ class Emoji {
   draw() {
     if ( this.route.length >= 2 ) {
       this.ctx.strokeStyle = this.color;
-      this.ctx.lineWidth = 3;
-      // for (var i = 1; i < this.route.length; i++) {
+      this.ctx.lineWidth = Math.floor(this.radius/8.3);
       for (var i = 1; i < this.route.length; i+=10) {
-        // if ( i%14 ) {
-          let a = this.route[i-5] || this;
-          let b = this.route[i];
-          this.ctx.beginPath();
-          this.ctx.moveTo(a.x, a.y);
-          this.ctx.lineTo(b.x, b.y);
-          this.ctx.stroke();
-        // }
+        let a = this.route[i-5] || this;
+        let b = this.route[i];
+        this.ctx.beginPath();
+        this.ctx.moveTo(a.x, a.y);
+        this.ctx.lineTo(b.x, b.y);
+        this.ctx.stroke();
       }
     }
-    if (!this.withinBounds) {
+    if (!this.canCollide) {
       this.ctx.strokeStyle = 'grey';
-      // this.ctx.beginPath();
-      // this.ctx.arc(this.x, this.y, this.radius+2, 0, 2 * Math.PI);
     } else {
       this.ctx.strokeStyle = this.color;
     }
     this.ctx.fillStyle = this.color;
-    this.ctx.lineWidth = 2.5;
+    this.ctx.lineWidth = 3;
     this.ctx.beginPath();
     this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
     this.ctx.fill();
@@ -434,34 +434,40 @@ class Emoji {
     }
   }
   move() {
+    if (!this.canCollide) {
+      this.canCollide = checkWithinBounds(this,0);
+    }
     if (!this.withinBounds) {
       this.withinBounds = checkWithinBounds(this, this.radius);
     }
     if (this.route.length >= 2) {
+      // this.getPassiveVector();
+      if (this.route.length === 2) {
       this.getPassiveVector();
+      }
       this.activeMove();
-      // if (this.route.length === 2) {
-        // this.getPassiveVector();
-      // }
     } else {
       this.passiveMove();
     }
+    if (this.lz) {
+      this.land(this.lz);
+    }
   }
   activeMove() {
-    this.route.splice(0, this.speed);
+    this.route.splice(0, 1);
     const { x, y } = this.route[0];
     this.x = x;
     this.y = y;
   }
   getPassiveVector() {
-    // const ax = this.route[1].x;
-    // const bx = this.route[0].x;
-    // const by = this.route[0].y;
-    // const ay = this.route[1].y;
-    const ax = this.route[this.route.length-1].x;
-    const bx = this.route[this.route.length-2].x;
-    const by = this.route[this.route.length-2].y;
-    const ay = this.route[this.route.length-1].y;
+    const ax = this.route[1].x;
+    const bx = this.route[0].x;
+    const by = this.route[0].y;
+    const ay = this.route[1].y;
+    // const ax = this.route[this.route.length-1].x;
+    // const bx = this.route[this.route.length-2].x;
+    // const by = this.route[this.route.length-2].y;
+    // const ay = this.route[this.route.length-1].y;
     this.vector = {
       dx: ax-bx,
       dy: ay-by
@@ -476,7 +482,8 @@ class Emoji {
     var distance = distanceBetween(this, that);
     if ( distance < this.radius + that.radius ) {
       if (that instanceof Emoji) {
-        if (this.withinBounds && that.withinBounds) {
+        // if (this.withinBounds && that.withinBounds) {
+        if (checkWithinBounds(this) && checkWithinBounds(that)) {
           return true;
         }
       } else {
@@ -528,17 +535,13 @@ function getMousePos(e) {
   const parentPos = getPosition(e.currentTarget);
   const x = e.clientX - parentPos.x;
   const y = e.clientY - parentPos.y;
-  // return { x, y };
   mousePos = { x, y };
 }
 
 function buildRoute(e) {
   if (selectedEmoji) {
-    var lastPoint;
-
-      lastPoint = selectedEmoji.route[selectedEmoji.route.length-1] || selectedEmoji;
-
-    // const currentPoint = getMousePos(e);
+    var lastPoint = selectedEmoji.route[selectedEmoji.route.length-1]
+             || selectedEmoji;
     const currentPoint = mousePos;
     const distance = distanceBetween(lastPoint, currentPoint);
     const angle = angleBetween(lastPoint, currentPoint);
@@ -550,12 +553,6 @@ function buildRoute(e) {
       let a = selectedEmoji.route[selectedEmoji.route.length-1] || lastPoint;
       let b = { x, y };
 
-      // var wasWithinBounds = checkWithinBounds(a, selectedEmoji.radius);
-      // var nowOutOfBounds = checkWithinBounds(b, selectedEmoji.radius);
-      // if (wasWithinBounds && nowOutOfBounds) {
-      //   selectedEmoji = null;
-      //   // return;
-      // }
       if ( distanceBetween(a, b) > 0 ) {
         selectedEmoji.route.push({ x, y });
       }
