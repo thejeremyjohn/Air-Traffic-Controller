@@ -33,7 +33,8 @@ var ready, selectedEmoji, ctx, emojis, lzs, score,
     test, gameOver, mousePos,
     emojiTypes,
     happy, worried, dead, shocked,
-    bigHappy, bigWorried, bigDead, bigShocked;
+    bigHappy, bigWorried, bigDead, bigShocked,
+    smallHappy, smallWorried, smallDead, smallShocked;
 
 const colors = ['blue', 'red'];
 document.addEventListener('DOMContentLoaded', () => {
@@ -45,16 +46,24 @@ document.addEventListener('DOMContentLoaded', () => {
   bigWorried = new Image(97, 97);
   bigDead = new Image(97, 97);
   bigShocked = new Image(97, 97);
+  smallHappy = new Image(37, 37);
+  smallWorried = new Image(37, 37);
+  smallDead = new Image(37, 37);
+  smallShocked = new Image(37, 37);
   happy.src = "./emojis/eyeglasses-black-face-emoticon.png";
   dead.src = "./emojis/astonished-black-emoticon-face.png";
   worried.src = "./emojis/worried-black-face.png";
   shocked.src = "./emojis/flashed-black-emoticon-face.png";
   bigHappy.src = "./emojis/moustache-male-black-emoticon-face.png";
-  bigWorried.src = "./emojis/moustache-male-black-emoticon-face.png";
-  bigDead.src = "./emojis/moustache-male-black-emoticon-face.png";
-  bigShocked.src = "./emojis/moustache-male-black-emoticon-face.png";
+  bigDead.src = "./emojis/astonished-black-emoticon-face.png";
+  bigWorried.src = "./emojis/worried-black-face.png";
+  bigShocked.src = "./emojis/flashed-black-emoticon-face.png";
+  smallHappy.src = "./emojis/sunglasses-black-emoticon-face.png";
+  smallDead.src = "./emojis/astonished-black-emoticon-face.png";
+  smallWorried.src = "./emojis/worried-black-face.png";
+  smallShocked.src = "./emojis/flashed-black-emoticon-face.png";
   // cool.src = "../emojis/sunglasses-black-emoticon-face.png";
-  var collect = imgCollect(8);
+  var collect = imgCollect(12);
   happy.onload = () => ( collect = collect() );
   worried.onload = () => ( collect = collect() );
   dead.onload = () => ( collect = collect() );
@@ -63,6 +72,10 @@ document.addEventListener('DOMContentLoaded', () => {
   bigWorried.onload = () => ( collect = collect() );
   bigDead.onload = () => ( collect = collect() );
   bigShocked.onload = () => ( collect = collect() );
+  smallHappy.onload = () => ( collect = collect() );
+  smallWorried.onload = () => ( collect = collect() );
+  smallDead.onload = () => ( collect = collect() );
+  smallShocked.onload = () => ( collect = collect() );
 
   emojiTypes = {
     regular: {
@@ -74,6 +87,11 @@ document.addEventListener('DOMContentLoaded', () => {
       faces: {happy:bigHappy, worried:bigWorried, dead:bigDead, shocked:bigShocked},
       radius: 50,
       speed: .65
+    },
+    small: {
+      faces: {happy:smallHappy, worried:smallWorried, dead:smallDead, shocked:smallShocked},
+      radius: 20,
+      speed: 1.5
     }
   };
 });
@@ -111,8 +129,8 @@ function newGame() {
       keyDown = false; deselectEmoji();
     }
   };
-  ctx.canvas.addEventListener("mousemove", buildRoute);
   ctx.canvas.addEventListener("mousemove", getMousePos);
+  ctx.canvas.addEventListener("mousemove", () => buildRoute(mousePos));
   emojis = [];
   emojis.push( spawnEmoji() );
   emojis.push( spawnEmoji() );
@@ -282,7 +300,8 @@ function spawnEmoji() {
   const color = colors[Math.floor(Math.random()*colors.length)];
   // console.log(`type below:`);
   // console.log(type);
-  var types = Object.keys(emojiTypes);
+  // var types = Object.keys(emojiTypes);
+  var types = ['regular', 'regular', 'big', 'small'];
   var type = types[Math.floor(Math.random()*types.length)];
   type = emojiTypes[type];
   var p = Object.assign({}, type, spawnPoint(ctx));
@@ -537,12 +556,33 @@ function getMousePos(e) {
   const y = e.clientY - parentPos.y;
   mousePos = { x, y };
 }
-
-function buildRoute(e) {
+// function pointsBetween(a, b, emoji) {
+//   console.log('pointsBetween was called');
+//   console.log(a);
+//   const distance = distanceBetween(a, b);
+//   const angle = angleBetween(a, b);
+//
+//   const points = [];
+//   for (var i = 0; i < distance; i+=emoji.speed) {
+//     let x = a.x + (Math.sin(angle) * i);
+//     let y = a.y + (Math.cos(angle) * i);
+//
+//     let lastPoint = points[points.length-1] || points[0];
+//     let currentPoint = { x, y };
+//     if ( distanceBetween(lastPoint, currentPoint) ) {
+//       console.log(`did we get here`);
+//       points.push({ x, y });
+//     }
+//   }
+//   return points;
+// }
+function buildRoute(currentPoint) {
   if (selectedEmoji) {
     var lastPoint = selectedEmoji.route[selectedEmoji.route.length-1]
              || selectedEmoji;
-    const currentPoint = mousePos;
+    // const currentPoint = mousePos;
+    // var pb = pointsBetween(lastPoint, currentPoint, selectedEmoji.speed);
+    // selectedEmoji.route = selectedEmoji.route.concat(pb);
     const distance = distanceBetween(lastPoint, currentPoint);
     const angle = angleBetween(lastPoint, currentPoint);
 
@@ -554,7 +594,7 @@ function buildRoute(e) {
       let b = { x, y };
 
       if ( distanceBetween(a, b) > 0 ) {
-        selectedEmoji.route.push({ x, y });
+        selectedEmoji.route.push(b);
       }
     }
   }
