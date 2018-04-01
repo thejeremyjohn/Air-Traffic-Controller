@@ -1,21 +1,25 @@
-### Background
+### Background and game mechanics
 
-Traffic Controller is based on the existing mobile title Air Control. The game allows 1-player interactions with a rectangular board. 2D-shapes (emojis with circular collision boxes) move in from outside the board, approaching in a straight line from some random vector. Some planes travel faster than others and/or have a different size.
+Pathfinder is based on the mobile game Air Control. 
 
-There are two to three designated spots on the board where planes can land (landing strips for planes / helipads for helicopters). When a plane enroute collides with a landing area, it lands and is safe, contributing +1 the player's score. At all other times a plane has the potential to collide with another plane which would trigger game over.
+Emojis with circular collision boxes move in from outside the board, approaching in a straight line from some random vector. There are three variations of emojis, each having a different size and movement speed. They can also be either red or blue. There are two landing areas on the board. One is read and the other is blue, indicating which color emoji is able to touch down.
 
-Planes cannot land themselves even if their random approach vector happens to take them directly over a landing area. The player directs planes to land by click and dragging a route to a landing area. As the player's score increases, the frequency with which planes spawn increases.
+Emojis cannot land themselves. The player's goal is to draw (click and drag) each emojis path to their landing area, avoiding collisions with other emojis along the way. Every emoji landed adds +1 to the player's score and a collision is an instant game over.
 
-### Additional Details
+As the player's score increases, the frequency with which emojis spawn increases.
 
-A plane will begin following a route as soon as it is clicked upon. Players should not be able to hold a plane in one spot, however they can make unrealistically tight spirals to keep a plane in the same area for a while. When a plane reaches the end of a route which does not collide with a landing area, the plane will continue in a straight line from it's most recent vector.
+### Additional Details and strategy
+
+An emoji will begin following a path as soon as the player begins drawing it. When an emoji reaches the end of a path which does not touch its landing area, the emoji will continue in a straight line from its most recent vector.
+
+As the board gets crowded, it will become necessary to draw more circuitous paths to try to queue up when emojis will reach their landing areas. The player can also slow down the action at any point, to make things less hectic.
 
 ### Functionality & MVP
 
 Players will be able to:
 
-- [ ] Play and Pause
-- [ ] Click and drag to draw routes for planes
+- [ ] Play, pause, and slow
+- [ ] Click (or hold SPACEBAR) and drag to draw routes for planes
 
 In addition, this project will include:
 
