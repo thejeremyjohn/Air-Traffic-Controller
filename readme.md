@@ -49,6 +49,6 @@ This project will be implemented with the following technologies:
 
 ### Bonus features
 
-- [ ] Alternate gameplay speeds
-- [ ] Alternate boards with their own styles and landing areas
-- [ ] Ability to choose what variety of planes can spawn in
+- Alternate gameplay speeds
+- Alternate boards with their own styles and landing areas
+- Ability to choose what variety of planes can spawn in
