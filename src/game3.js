@@ -7,9 +7,7 @@ function tick() {
     if (accTime >= timeInterval) {
       accTime = 0;
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-      lzs.forEach( lz => {
-        lz.draw(ctx);
-      });
+      lzs.forEach( lz => lz.draw(ctx) );
       for (var i = 0; i < emojis.length; i++) {
         handleProximity(i);
         if (!emojis[i]) continue;
@@ -18,10 +16,13 @@ function tick() {
         if (emojis[i].wayOff()) {
           emojis.splice(i, 1);
           console.log('deleted wayOff emoji');
-          emojis.push( spawnEmoji() );
+          // emojis.push( spawnEmoji() );
         }
       }
       // smartSpawning();
+      while ( emojis.length < Math.floor(score/5) ) {
+        emojis.push( spawnEmoji() );
+      }
       drawScore();
     }
   }
@@ -42,41 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
   worried = new Image(47, 47);
   dead = new Image(47, 47);
   shocked = new Image(47, 47);
-  bigHappy = new Image(97, 97);
-  bigWorried = new Image(97, 97);
-  bigDead = new Image(97, 97);
-  bigShocked = new Image(97, 97);
+  bigHappy = new Image(57, 57);
   smallHappy = new Image(37, 37);
-  smallWorried = new Image(37, 37);
-  smallDead = new Image(37, 37);
-  smallShocked = new Image(37, 37);
   happy.src = "./emojis/eyeglasses-black-face-emoticon.png";
-  dead.src = "./emojis/astonished-black-emoticon-face.png";
   worried.src = "./emojis/worried-black-face.png";
+  dead.src = "./emojis/astonished-black-emoticon-face.png";
   shocked.src = "./emojis/flashed-black-emoticon-face.png";
   bigHappy.src = "./emojis/moustache-male-black-emoticon-face.png";
-  bigDead.src = "./emojis/astonished-black-emoticon-face.png";
-  bigWorried.src = "./emojis/worried-black-face.png";
-  bigShocked.src = "./emojis/flashed-black-emoticon-face.png";
-  smallHappy.src = "./emojis/sunglasses-black-emoticon-face.png";
-  smallDead.src = "./emojis/astonished-black-emoticon-face.png";
-  smallWorried.src = "./emojis/worried-black-face.png";
-  smallShocked.src = "./emojis/flashed-black-emoticon-face.png";
-  // cool.src = "../emojis/sunglasses-black-emoticon-face.png";
-  var collect = imgCollect(12);
+  smallHappy.src = "./emojis/laughing-emoticon-black-happy-face.png";
+  var collect = imgCollect(6);
   happy.onload = () => ( collect = collect() );
   worried.onload = () => ( collect = collect() );
   dead.onload = () => ( collect = collect() );
   shocked.onload = () => ( collect = collect() );
   bigHappy.onload = () => ( collect = collect() );
-  bigWorried.onload = () => ( collect = collect() );
-  bigDead.onload = () => ( collect = collect() );
-  bigShocked.onload = () => ( collect = collect() );
   smallHappy.onload = () => ( collect = collect() );
-  smallWorried.onload = () => ( collect = collect() );
-  smallDead.onload = () => ( collect = collect() );
-  smallShocked.onload = () => ( collect = collect() );
-
   emojiTypes = {
     regular: {
       faces: {happy, worried, dead, shocked},
@@ -84,12 +65,12 @@ document.addEventListener('DOMContentLoaded', () => {
       speed: 1
     },
     big: {
-      faces: {happy:bigHappy, worried:bigWorried, dead:bigDead, shocked:bigShocked},
-      radius: 50,
+      faces: {happy:bigHappy, worried, dead, shocked},
+      radius: 30,
       speed: .65
     },
     small: {
-      faces: {happy:smallHappy, worried:smallWorried, dead:smallDead, shocked:smallShocked},
+      faces: {happy:smallHappy, worried, dead, shocked},
       radius: 20,
       speed: 1.5
     }
@@ -123,10 +104,12 @@ function newGame() {
   };
   ctx.canvas.addEventListener("mousedown", secretRegularSpeed);
   ctx.canvas.addEventListener("mousedown", secretSlowerSpeed);
-  ctx.canvas.addEventListener("mouseup", deselectEmoji);
+  ctx.canvas.addEventListener("mouseup", () => (
+    selectedEmoji = null
+  ));
   document.body.onkeyup = (e) => {
     if(e.keyCode === 32 || e.key === ' ') {
-      keyDown = false; deselectEmoji();
+      keyDown = false; selectedEmoji = null;
     }
   };
   ctx.canvas.addEventListener("mousemove", getMousePos);
@@ -167,7 +150,24 @@ class LandingZone {
     ctx.stroke();
   }
 }
-
+// function mouseCollidesWith(lz) {
+//   console.log(`mouseCollidesWith was called`);
+//   var distance = distanceBetween(mousePos, lz);
+//   if ( distance < mousePos + lz.radius ) {
+//     console.log(`it does collide`);
+//     return true;
+//   }
+//   console.log(`it does not collide`);
+//   return false;
+// }
+function drawSpeedButtons() {
+  ctx.fillStyle = 'grey';
+  ctx.fillRect(0, 0, 33, 20);
+  ctx.fillStyle = 'black';
+  ctx.font = '10px Arial';
+  ctx.fillText('normal', 0, 10);
+  ctx.fillText('speed', 0, 18);
+}
 function drawScore() {
   ctx.textAlign='center';
   ctx.fillStyle = 'white';
@@ -221,43 +221,39 @@ function drawScore() {
     );
   }
   ctx.globalAlpha = 1;
+  drawSpeedButtons();
 }
-// function smartSpawning() {
-//   if (score < 10) {
-//     console.log('spawning');
-//     emojis.push( spawnEmoji() );
-//   } else {
-//     while ( emojis.length < Math.floor(score/5) ) {
-//       console.log('spawning');
-//       emojis.push( spawnEmoji() );
-//     }
-//   }
-// }
-
 function handleProximity(i) {
   if ( emojis[i].route.length >= 2 && !emojis[i].lz ) {
     for (var lzi = 0; lzi < lzs.length; lzi++) {
-      if ( emojis[i].color === lzs[lzi].color
-      && emojis[i].collidesWith(lzs[lzi]) ) {
+      if (
+      !emojis[i].landing
+      && emojis[i].color === lzs[lzi].color
+      && emojis[i].collidesWith(lzs[lzi])
+      ) {
+        console.log( 'emoji landing' );
+        emojis[i].landing = true;
+        emojis[i].route = pointsBetween(emojis[i], lzs[lzi]);
         score++;
         emojis[i].lz = lzs[lzi];
-        console.log( 'emoji landed' );
-        emojis.splice(i, 1);
         if (score < 10) {
-          console.log('spawning');
           emojis.push( spawnEmoji() );
-        } else {
-          while ( emojis.length < Math.floor(score/5) ) {
-            console.log('spawning');
-            emojis.push( spawnEmoji() );
-          }
         }
+        // else {
+        //   while ( emojis.length < Math.floor(score/5) ) {
+        //   // while (
+        //   //   emojis.filter(emoji => emoji.landing === false)
+        //   //   < Math.floor(score/5)
+        //   // ) {
+        //     emojis.push( spawnEmoji() );
+        //   }
+        // }
         return;
       }
     }
   } else if (emojis[i].radius <= 5) emojis.splice(i, 1);
   for (var j = 0; j < emojis.length; j++) {
-    if ( i === j ) continue;
+    if ( i === j || !emojis[i] ) continue;
     if ( emojis[i].nearlyCollidesWith(emojis[j]) ) {
       emojis[i].changeFace(emojis[i].faces.worried);
     } else {
@@ -270,7 +266,7 @@ function handleProximity(i) {
       ctx.canvas.removeEventListener("mouseup", () => ( selectedEmoji = null ));
       ctx.canvas.removeEventListener("mousemove", buildRoute);
       emojis[i].changeFace(emojis[i].faces.dead);
-      emojis[i].vector = { dx:0, dy:0 };
+      emojis[i].vector = { vx:0, vy:0 };
       emojis[i].route = [];
       return;
     }
@@ -287,7 +283,6 @@ function spawnPoint(ctx) {
   const [x, y] = area.map( range => getRandomInt(...range) );
   return { x, y };
 }
-
 function getRandomFloat(min, max) {
   return Math.random() * (max - min) + min;
 }
@@ -295,18 +290,12 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 function spawnEmoji() {
-  // console.log(`emojiTypes below:`);
-  // console.log(emojiTypes);
+  console.log(`spawnEmoji was called`);
   const color = colors[Math.floor(Math.random()*colors.length)];
-  // console.log(`type below:`);
-  // console.log(type);
-  // var types = Object.keys(emojiTypes);
   var types = ['regular', 'regular', 'big', 'small'];
   var type = types[Math.floor(Math.random()*types.length)];
   type = emojiTypes[type];
   var p = Object.assign({}, type, spawnPoint(ctx));
-  // console.log(`p below:`);
-  // console.log(p);
   var closeCall = true;
   while (closeCall) {
     closeCall = false;
@@ -323,7 +312,6 @@ function spawnEmoji() {
   // console.log(emoji);
   return new Emoji(emoji);
 }
-
 function spawnLZs(n) {
   const LZArr = [];
   for (var i = 0; i < colors.length; i++) {
@@ -335,7 +323,6 @@ function spawnLZs(n) {
   }
   return LZArr;
 }
-
 function checkWithinBounds(point, radius=0) {
   return (
        point.x-radius >= 0
@@ -344,7 +331,6 @@ function checkWithinBounds(point, radius=0) {
     && point.y+radius <= ctx.canvas.height
   );
 }
-
 class Emoji {
   constructor(options) {
     this.withinBounds = false;
@@ -359,37 +345,25 @@ class Emoji {
     this.speed = (options.speed || 1);
     this.vector = this.randomVector();
     this.color = options.color;
-    this.lz = null;
-  }
-
-  land(lz) {
-    this.route = [];
-    console.log('land was callled');
-    this.canCollide = false;
-    const angle = angleBetween(this, lz);
-    this.x += Math.sin(angle) * this.speed;
-    this.y += Math.cos(angle) * this.speed;
-    this.radius -= 0.1;
-    this.face.width -= 0.1;
-    this.face.height -= 0.1;
+    this.landing = false;
   }
   randomVector() {
     const angle = getRandomFloat(0, 2*Math.PI);
-    var dx = Math.cos(angle) * this.speed;
-    var dy = Math.sin(angle) * this.speed;
+    var vx = Math.cos(angle) * this.speed;
+    var vy = Math.sin(angle) * this.speed;
     const mx = this.ctx.canvas.width/2;
     const my = this.ctx.canvas.height/2;
     if (this.x >= mx) {
-      dx = Math.abs(dx) * -1;
+      vx = Math.abs(vx) * -1;
     } else {
-      dx = Math.abs(dx);
+      vx = Math.abs(vx);
     }
     if (this.y >= my) {
-      dy = Math.abs(dy) * -1;
+      vy = Math.abs(vy) * -1;
     } else {
-      dy = Math.abs(dy);
+      vy = Math.abs(vy);
     }
-    return { dx, dy };
+    return { vx, vy };
   }
   draw() {
     if ( this.route.length >= 2 ) {
@@ -417,9 +391,9 @@ class Emoji {
     this.ctx.stroke();
     this.ctx.drawImage(
       this.face,
-      this.x-(this.face.width/2),
-      this.y-(this.face.height/2),
-      this.face.width, this.face.height
+      this.x-(this.radius-1.5),
+      this.y-(this.radius-1.5),
+      this.radius*2-3, this.radius*2-3
     );
   }
   wayOff() {
@@ -442,25 +416,24 @@ class Emoji {
            this.x-this.radius <= 0
         || this.x+this.radius >= this.ctx.canvas.width
       ) {
-        this.vector.dx *= -1;
+        this.vector.vx *= -1;
       }
       if (
            this.y-this.radius <= 0
         || this.y+this.radius >= this.ctx.canvas.height
       ) {
-        this.vector.dy *= -1;
+        this.vector.vy *= -1;
       }
     }
   }
   move() {
-    if (!this.canCollide) {
+    if (!this.landing && !this.canCollide) {
       this.canCollide = checkWithinBounds(this,0);
     }
     if (!this.withinBounds) {
       this.withinBounds = checkWithinBounds(this, this.radius);
     }
     if (this.route.length >= 2) {
-      // this.getPassiveVector();
       if (this.route.length === 2) {
       this.getPassiveVector();
       }
@@ -469,7 +442,7 @@ class Emoji {
       this.passiveMove();
     }
     if (this.lz) {
-      this.land(this.lz);
+      this.land();
     }
   }
   activeMove() {
@@ -483,26 +456,28 @@ class Emoji {
     const bx = this.route[0].x;
     const by = this.route[0].y;
     const ay = this.route[1].y;
-    // const ax = this.route[this.route.length-1].x;
-    // const bx = this.route[this.route.length-2].x;
-    // const by = this.route[this.route.length-2].y;
-    // const ay = this.route[this.route.length-1].y;
     this.vector = {
-      dx: ax-bx,
-      dy: ay-by
+      vx: ax-bx,
+      vy: ay-by
     };
   }
   passiveMove() {
     this.bounce();
-    this.x += this.vector.dx;
-    this.y += this.vector.dy;
+    this.x += this.vector.vx;
+    this.y += this.vector.vy;
+  }
+  land() {
+    if (this.route.length <= 5) {
+      this.vector = { vx:0, vy:0 };
+    }
+    this.canCollide = false;
+    this.radius *= 0.98;
   }
   collidesWith(that) {
     var distance = distanceBetween(this, that);
     if ( distance < this.radius + that.radius ) {
       if (that instanceof Emoji) {
-        // if (this.withinBounds && that.withinBounds) {
-        if (checkWithinBounds(this) && checkWithinBounds(that)) {
+        if ( this.canCollide && that.canCollide ) {
           return true;
         }
       } else {
@@ -528,15 +503,9 @@ class Emoji {
   changeFace(face) {
     if (this.face !== face) {
       this.face = face;
-      this.draw();
     }
   }
 }
-function deselectEmoji() {
-  console.log('deselectEmoji was called');
-  selectedEmoji = null;
-}
-
 function selectEmoji(e) {
   if (mousePos === undefined) {
     mousePos = getMousePos(e);
@@ -556,41 +525,29 @@ function getMousePos(e) {
   const y = e.clientY - parentPos.y;
   mousePos = { x, y };
 }
-// function pointsBetween(a, b, emoji) {
-//   console.log('pointsBetween was called');
-//   console.log(a);
-//   const distance = distanceBetween(a, b);
-//   const angle = angleBetween(a, b);
-//
-//   const points = [];
-//   for (var i = 0; i < distance; i+=emoji.speed) {
-//     let x = a.x + (Math.sin(angle) * i);
-//     let y = a.y + (Math.cos(angle) * i);
-//
-//     let lastPoint = points[points.length-1] || points[0];
-//     let currentPoint = { x, y };
-//     if ( distanceBetween(lastPoint, currentPoint) ) {
-//       console.log(`did we get here`);
-//       points.push({ x, y });
-//     }
-//   }
-//   return points;
-// }
-function buildRoute(currentPoint) {
+function pointsBetween(a, b) {
+  const distance = distanceBetween(a, b);
+  const angle = angleBetween(a, b);
+  const points = [];
+  for (var i = 0; i < distance; i+=1) {
+    let x = a.x + (Math.sin(angle) * i);
+    let y = a.y + (Math.cos(angle) * i);
+    points.push({ x, y });
+  }
+  return points;
+}
+function buildRoute(pointB) {
   if (selectedEmoji) {
-    var lastPoint = selectedEmoji.route[selectedEmoji.route.length-1]
-             || selectedEmoji;
-    // const currentPoint = mousePos;
-    // var pb = pointsBetween(lastPoint, currentPoint, selectedEmoji.speed);
-    // selectedEmoji.route = selectedEmoji.route.concat(pb);
-    const distance = distanceBetween(lastPoint, currentPoint);
-    const angle = angleBetween(lastPoint, currentPoint);
+    var pointA = selectedEmoji.route[selectedEmoji.route.length-1]
+              || selectedEmoji;
+    const distance = distanceBetween(pointA, pointB);
+    const angle = angleBetween(pointA, pointB);
 
     for (var i = 0; i < distance; i+=selectedEmoji.speed) {
-      let x = lastPoint.x + (Math.sin(angle) * i);
-      let y = lastPoint.y + (Math.cos(angle) * i);
+      let x = pointA.x + (Math.sin(angle) * i);
+      let y = pointA.y + (Math.cos(angle) * i);
 
-      let a = selectedEmoji.route[selectedEmoji.route.length-1] || lastPoint;
+      let a = selectedEmoji.route[selectedEmoji.route.length-1] || pointA;
       let b = { x, y };
 
       if ( distanceBetween(a, b) > 0 ) {
@@ -605,7 +562,6 @@ function distanceBetween(a, b) {
 function angleBetween(a, b) {
   return Math.atan2( b.x - a.x, b.y - a.y );
 }
-
 function getPosition(el) {
   var x = 0, y = 0;
   while (el) {
