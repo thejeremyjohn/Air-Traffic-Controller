@@ -1,32 +1,33 @@
-### Background
+### Background and game mechanics
 
-Traffic Controller is based on the existing mobile title Air Control. The game allows 1-player interactions with a rectangular board. 2D-shapes (emojis with circular collision boxes) move in from outside the board, approaching in a straight line from some random vector. Some planes travel faster than others and/or have a different size.
+Pathfinder is based on the mobile game Air Control. 
 
-There are two to three designated spots on the board where planes can land (landing strips for planes / helipads for helicopters). When a plane enroute collides with a landing area, it lands and is safe, contributing +1 the player's score. At all other times a plane has the potential to collide with another plane which would trigger game over.
+Emojis move in from outside the board, approaching in a straight line from some random vector. There are three variations of emojis, each having a different size and movement speed. They can also be either red or blue. There are two landing areas on the board. One is read and the other is blue, indicating which color emoji is able to touch down.
 
-Planes cannot land themselves even if their random approach vector happens to take them directly over a landing area. The player directs planes to land by click and dragging a route to a landing area. As the player's score increases, the frequency with which planes spawn increases.
+Emojis cannot land themselves. The player's goal is to draw each emojis path to their landing area, avoiding collisions with other emojis. Every emoji landed adds +1 to the player's score and a collision is an instant game over.
 
-### Additional Details
+As the player's score increases, the frequency with which emojis spawn increases.
 
-A plane will begin following a route as soon as it is clicked upon. Players should not be able to hold a plane in one spot, however they can make unrealistically tight spirals to keep a plane in the same area for a while. When a plane reaches the end of a route which does not collide with a landing area, the plane will continue in a straight line from it's most recent vector.
+### Additional Details and strategy
+
+An emoji will begin following a path as soon as the player begins drawing it. When an emoji reaches the end of a path which does not touch its landing area, the emoji will continue in a straight line from its most recent vector.
+
+As the board gets crowded, it will become necessary to draw more circuitous paths to try to queue up when emojis will reach their landing areas. The player can also slow down the action at any point, to make things less hectic.
 
 ### Functionality & MVP
 
 Players will be able to:
 
-- [ ] Play and Pause
-- [ ] Click and drag to draw routes for planes
+- Play, pause, and slow
+- Click (or hold SPACEBAR) and drag to draw routes for planes
 
-In addition, this project will include:
-
-- [ ] An About modal describing the background and rules of the game
-- [ ] A production README
+In addition, this project will include on-screen instructions that appear in the early phase of the game.
 
 ### Wireframes
 
-This app will consist of a single screen with game board, game controls, and nav links to my Github and LinkedIn. Game controls will include `play`, `pause`, and `click&drag` to draw plane routes.
+This app consists of a single screen with game board and game controls. Besides clicking and dragging, game controls  include `play`, `pause`,  and `slow` buttons. Below that are HTML links to my Github and LinkedIn.
 
-![wireframes](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/air_traffic_controller.png)
+![wireframes](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder.png)
 
 ### Architecture and Technologies
 
@@ -35,19 +36,10 @@ This project will be implemented with the following technologies:
 - `JavaScript` for game logic
 - `Canvas` for rendering shapes and/or
 - `CSS3` for rendering shapes, transformations, animations
-- `Webpack` to bundle js files
-
-In addition to the entry file, there will be three scripts involved in this project:
-
-`board.js`: will designate the fixed position of buttons and landing areas and handle landing animations if any.
-
-`plane.js`: will hold the plane movement logic, track their positions at all times, and trigger events upon collision.
-
-`game.js`: will keep score and render game over prompt.
 
 ### Implementation Timeline
 
-**Day 1**: Setup all necessary Node modules, including getting webpack up and running. Get a skeleton going for the entry file and the three scripts described above. Experiment with putting some basic shapes on the board.
+**Day 1**: Experiment with putting some basic shapes on the board.
 
 **Day 2**: Write handler for click and drag events. Devise a strategy for random-ish plane spawning from outside the board. Implement score tracking.
 
@@ -57,6 +49,6 @@ In addition to the entry file, there will be three scripts involved in this proj
 
 ### Bonus features
 
-- [ ] Alternate gameplay speeds
-- [ ] Alternate boards with their own styles and landing areas
-- [ ] Ability to choose what variety of planes can spawn in
+- Alternate gameplay speeds
+- Alternate boards with their own styles and landing areas
+- Ability to choose what variety of planes can spawn in
