@@ -2,9 +2,9 @@
 
 Pathfinder is based on the mobile game Air Control. 
 
-Emojis with circular collision boxes move in from outside the board, approaching in a straight line from some random vector. There are three variations of emojis, each having a different size and movement speed. They can also be either red or blue. There are two landing areas on the board. One is read and the other is blue, indicating which color emoji is able to touch down.
+Emojis move in from outside the board, approaching in a straight line from some random vector. There are three variations of emojis, each having a different size and movement speed. They can also be either red or blue. There are two landing areas on the board. One is read and the other is blue, indicating which color emoji is able to touch down.
 
-Emojis cannot land themselves. The player's goal is to draw (click and drag) each emojis path to their landing area, avoiding collisions with other emojis along the way. Every emoji landed adds +1 to the player's score and a collision is an instant game over.
+Emojis cannot land themselves. The player's goal is to draw (click and drag) each emojis path to their landing area, avoiding collisions with other emojis. Every emoji landed adds +1 to the player's score and a collision is an instant game over.
 
 As the player's score increases, the frequency with which emojis spawn increases.
 
