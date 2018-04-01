@@ -18,13 +18,13 @@ As the board gets crowded, it will become necessary to draw more circuitous path
 
 Players will be able to:
 
-- [ ] Play, pause, and slow
-- [ ] Click (or hold SPACEBAR) and drag to draw routes for planes
+- Play, pause, and slow
+- Click (or hold SPACEBAR) and drag to draw routes for planes
 
 In addition, this project will include:
 
-- [ ] On-screen instructions that appear in the early phase of the game.
-- [ ] A production README
+- On-screen instructions that appear in the early phase of the game.
+- A production README
 
 ### Wireframes
 
@@ -39,19 +39,10 @@ This project will be implemented with the following technologies:
 - `JavaScript` for game logic
 - `Canvas` for rendering shapes and/or
 - `CSS3` for rendering shapes, transformations, animations
-- `Webpack` to bundle js files
-
-In addition to the entry file, there will be three scripts involved in this project:
-
-`board.js`: will designate the fixed position of buttons and landing areas and handle landing animations if any.
-
-`plane.js`: will hold the plane movement logic, track their positions at all times, and trigger events upon collision.
-
-`game.js`: will keep score and render game over prompt.
 
 ### Implementation Timeline
 
-**Day 1**: Setup all necessary Node modules, including getting webpack up and running. Get a skeleton going for the entry file and the three scripts described above. Experiment with putting some basic shapes on the board.
+**Day 1**: Experiment with putting some basic shapes on the board.
 
 **Day 2**: Write handler for click and drag events. Devise a strategy for random-ish plane spawning from outside the board. Implement score tracking.
 
