@@ -4,7 +4,7 @@ Pathfinder is based on the mobile game Air Control.
 
 Emojis move in from outside the board, approaching in a straight line from some random vector. There are three variations of emojis, each having a different size and movement speed. They can also be either red or blue. There are two landing areas on the board. One is read and the other is blue, indicating which color emoji is able to touch down.
 
-Emojis cannot land themselves. The player's goal is to draw (click and drag) each emojis path to their landing area, avoiding collisions with other emojis. Every emoji landed adds +1 to the player's score and a collision is an instant game over.
+Emojis cannot land themselves. The player's goal is to draw each emojis path to their landing area, avoiding collisions with other emojis. Every emoji landed adds +1 to the player's score and a collision is an instant game over.
 
 As the player's score increases, the frequency with which emojis spawn increases.
 
@@ -23,12 +23,12 @@ Players will be able to:
 
 In addition, this project will include:
 
-- [ ] An About modal describing the background and rules of the game
+- [ ] On-screen instructions that appear in the early phase of the game.
 - [ ] A production README
 
 ### Wireframes
 
-This app will consist of a single screen with game board, game controls, and nav links to my Github and LinkedIn. Game controls will include `play`, `pause`, and `click&drag` to draw plane routes.
+This app consists of a single screen with game board and game controls. Besides clicking and dragging, game controls  include `play`, `pause`,  and `slow` buttons. Below that are HTML links to my Github and LinkedIn.
 
 ![wireframes](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/air_traffic_controller.png)
 
