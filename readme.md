@@ -21,10 +21,7 @@ Players will be able to:
 - Play, pause, and slow
 - Click (or hold SPACEBAR) and drag to draw routes for planes
 
-In addition, this project will include:
-
-- On-screen instructions that appear in the early phase of the game.
-- A production README
+In addition, this project will include on-screen instructions that appear in the early phase of the game.
 
 ### Wireframes
 
