@@ -1,4 +1,10 @@
-var ticker, accTime=0, lastTime=Date.now(), desiredTimeInterval=15, timeInterval=desiredTimeInterval;
+var accTime=0, lastTime=Date.now(), paused=false,
+    timeInterval=desiredTimeInterval,
+    desiredTimeInterval=15, keyDown=false;
+var ready, ctx, ticker, lzs, score, mousePos,
+    gameOver, emojiTypes, emojis, selectedEmoji,
+    happy, bigHappy, smallHappy, worried, dead, shocked;
+const colors = ['blue', 'red'];
 function tick() {
   if (ready) {
     const deltaTime = Date.now() - lastTime;
@@ -16,10 +22,9 @@ function tick() {
         if (emojis[i].wayOff()) {
           emojis.splice(i, 1);
           console.log('deleted wayOff emoji');
-          // emojis.push( spawnEmoji() );
+          emojis.push( spawnEmoji() );
         }
       }
-      // smartSpawning();
       while ( emojis.length < Math.floor(score/5) ) {
         emojis.push( spawnEmoji() );
       }
@@ -29,15 +34,6 @@ function tick() {
   ticker = requestAnimationFrame(tick);
 }
 ticker = requestAnimationFrame(tick);
-
-var ready, selectedEmoji, ctx, emojis, lzs, score,
-    test, gameOver, mousePos,
-    emojiTypes,
-    happy, worried, dead, shocked,
-    bigHappy, bigWorried, bigDead, bigShocked,
-    smallHappy, smallWorried, smallDead, smallShocked;
-
-const colors = ['blue', 'red'];
 document.addEventListener('DOMContentLoaded', () => {
   happy = new Image(47, 47);
   worried = new Image(47, 47);
@@ -61,22 +57,18 @@ document.addEventListener('DOMContentLoaded', () => {
   emojiTypes = {
     regular: {
       faces: {happy, worried, dead, shocked},
-      radius: 25,
-      speed: 1
+      radius: 25, speed: 1
     },
     big: {
       faces: {happy:bigHappy, worried, dead, shocked},
-      radius: 30,
-      speed: .65
+      radius: 30, speed: .65
     },
     small: {
       faces: {happy:smallHappy, worried, dead, shocked},
-      radius: 20,
-      speed: 1.5
+      radius: 20, speed: 1.5
     }
   };
 });
-
 function imgCollect(n) {
   var count = 0;
   const collector = () => {
@@ -92,7 +84,6 @@ function imgCollect(n) {
   };
   return collector;
 }
-var keyDown = false;
 function newGame() {
   gameOver = false;
   ctx.canvas.removeEventListener("mousedown", newGame);
@@ -104,9 +95,8 @@ function newGame() {
   };
   ctx.canvas.addEventListener("mousedown", secretRegularSpeed);
   ctx.canvas.addEventListener("mousedown", secretSlowerSpeed);
-  ctx.canvas.addEventListener("mouseup", () => (
-    selectedEmoji = null
-  ));
+  ctx.canvas.addEventListener("mousedown", pause);
+  ctx.canvas.addEventListener("mouseup", () => (selectedEmoji = null));
   document.body.onkeyup = (e) => {
     if(e.keyCode === 32 || e.key === ' ') {
       keyDown = false; selectedEmoji = null;
@@ -121,18 +111,6 @@ function newGame() {
   score = 0;
   timeInterval = desiredTimeInterval;
 }
-function secretRegularSpeed(e) {
-  if ( mousePos.x < 15 && mousePos.y < 15 ) {
-    timeInterval = desiredTimeInterval;
-  }
-}
-function secretSlowerSpeed(e) {
-  if ( mousePos.x > ctx.canvas.width-15 && mousePos.y < 15 ) {
-    timeInterval += timeInterval;
-    console.log(timeInterval);
-  }
-}
-
 class LandingZone {
   constructor(options) {
     this.radius = options.radius;
@@ -160,15 +138,64 @@ class LandingZone {
 //   console.log(`it does not collide`);
 //   return false;
 // }
+function play() {
+  if (paused) {
+    ticker = requestAnimationFrame(tick);
+    paused = false;
+  }
+}
+function pause() {
+  if ( mousePos.x < 30 && mousePos.y > ctx.canvas.height-25 ) {
+    if (!paused) {
+      cancelAnimationFrame(ticker);
+      paused = true;
+    }
+  }
+}
+function secretRegularSpeed(e) {
+  if ( mousePos.x > 30 && mousePos.x < 60 && mousePos.y > ctx.canvas.height-25) {
+    timeInterval = desiredTimeInterval;
+    play();
+  }
+}
+function secretSlowerSpeed(e) {
+  if ( mousePos.x > 60 && mousePos.x < 90 && mousePos.y > ctx.canvas.height-25) {
+    timeInterval += timeInterval;
+    play()
+    // console.log(timeInterval);
+  }
+}
 function drawSpeedButtons() {
+  // ctx.fillStyle = 'grey';
+  // ctx.fillRect(0, 0, 40, 20);
+  // ctx.fillStyle = 'black';
+  // ctx.font = '10px Arial';
+  // ctx.fillText('normal', 0, 10);
+  // ctx.fillText('speed', 0, 18);
+  const y = ctx.canvas.height;
+
   ctx.fillStyle = 'grey';
-  ctx.fillRect(0, 0, 33, 20);
-  ctx.fillStyle = 'black';
-  ctx.font = '10px Arial';
-  ctx.fillText('normal', 0, 10);
-  ctx.fillText('speed', 0, 18);
+  ctx.strokeStyle = 'grey';
+  // pause
+  ctx.fillRect(5, y-25, 10, 20);
+  ctx.fillRect(20, y-25, 10, 20);
+  // ctx.fill();
+  // play
+  ctx.beginPath();
+  ctx.moveTo(42, y-6);
+  ctx.lineTo(42, y-23);
+  ctx.lineTo(57, y-14);
+  ctx.fill();
+
+  ctx.rect(65, y-25, 25, 20);
+  ctx.font = 'bold 10px Arial';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.fillText('SLO', 67, y-12);
 }
 function drawScore() {
+  drawSpeedButtons();
+
   ctx.textAlign='center';
   ctx.fillStyle = 'white';
   ctx.font = "20px Arial";
@@ -221,7 +248,6 @@ function drawScore() {
     );
   }
   ctx.globalAlpha = 1;
-  drawSpeedButtons();
 }
 function handleProximity(i) {
   if ( emojis[i].route.length >= 2 && !emojis[i].lz ) {
@@ -366,8 +392,9 @@ class Emoji {
     return { vx, vy };
   }
   draw() {
+    this.ctx.strokeStyle = this.color;
+    this.ctx.fillStyle = this.color;
     if ( this.route.length >= 2 ) {
-      this.ctx.strokeStyle = this.color;
       this.ctx.lineWidth = Math.floor(this.radius/8.3);
       for (var i = 1; i < this.route.length; i+=10) {
         let a = this.route[i-5] || this;
@@ -383,7 +410,6 @@ class Emoji {
     } else {
       this.ctx.strokeStyle = this.color;
     }
-    this.ctx.fillStyle = this.color;
     this.ctx.lineWidth = 3;
     this.ctx.beginPath();
     this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
