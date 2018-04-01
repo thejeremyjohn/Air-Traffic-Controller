@@ -21,16 +21,11 @@ Players will be able to:
 - Play, pause, and slow
 - Click (or hold SPACEBAR) and drag to draw routes for planes
 
-In addition, this project will include on-screen instructions that appear in the early phase of the game.
+In addition, this project includes on-screen instructions that appear in the early phase of the game.
 
-### Wireframes
-
-This app consists of a single screen with game board and game controls. Besides clicking and dragging, game controls  include `play`, `pause`,  and `slow` buttons. Below that are HTML links to my Github and LinkedIn.
-
-![wireframes](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder.png)
-
-### Gameplay
+### Wireframes and gameplay
 <p align="center">
+  <img src="https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder.png">
   <img src="https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder_gameplay.gif">
 </p>
 ![gameplay-gif](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder_gameplay.gif)
