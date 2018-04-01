@@ -28,7 +28,6 @@ In addition, this project includes on-screen instructions that appear in the ear
   <img src="https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder.png">
   <img src="https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder_gameplay.gif">
 </p>
-![gameplay-gif](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder_gameplay.gif)
 
 ### Architecture and Technologies
 
