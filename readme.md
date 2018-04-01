@@ -30,7 +30,7 @@ In addition, this project will include:
 
 This app consists of a single screen with game board and game controls. Besides clicking and dragging, game controls  include `play`, `pause`,  and `slow` buttons. Below that are HTML links to my Github and LinkedIn.
 
-![wireframes](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/air_traffic_controller.png)
+![wireframes](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder.png)
 
 ### Architecture and Technologies
 
