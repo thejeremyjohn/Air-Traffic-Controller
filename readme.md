@@ -1,3 +1,4 @@
+[Play the game!](https://thejeremyjohn.github.io/pathfinder/)
 ### Background and game mechanics
 
 Pathfinder is based on the mobile game Air Control. 
