@@ -35,12 +35,12 @@ function tick() {
 }
 ticker = requestAnimationFrame(tick);
 document.addEventListener('DOMContentLoaded', () => {
-  happy = new Image(47, 47);
-  worried = new Image(47, 47);
-  dead = new Image(47, 47);
-  shocked = new Image(47, 47);
-  bigHappy = new Image(57, 57);
-  smallHappy = new Image(37, 37);
+  happy = new Image();
+  worried = new Image();
+  dead = new Image();
+  shocked = new Image();
+  bigHappy = new Image();
+  smallHappy = new Image();
   happy.src = "./emojis/eyeglasses-black-face-emoticon.png";
   worried.src = "./emojis/worried-black-face.png";
   dead.src = "./emojis/astonished-black-emoticon-face.png";
