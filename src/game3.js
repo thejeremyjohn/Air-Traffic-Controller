@@ -225,7 +225,7 @@ function drawScore() {
     ctx.fillText( 'bouncing off walls is cool though...', 20, 140 );
   }
   if (score >= 8 && score <= 8) {
-    ctx.fillText( '(not a reccommended strategy)...', 20, 160 );
+    ctx.fillText( '(not a recommended strategy)...', 20, 160 );
   }
   if (score >= 9 && score <= 10) {
     ctx.fillText( 'ENJOY :]', 20, 190 );
