@@ -17,10 +17,10 @@
     "url": "https://github.com/thejeremyjohn/Air-Traffic-Controller/issues"
   },
   "homepage": "https://github.com/thejeremyjohn/Air-Traffic-Controller#readme",
-  "dependencies": {
-    "webpack": "^4.2.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "webpack-cli": "^2.0.13"
-  }
+    "webpack": "^4.6.0",
+    "webpack-cli": "^2.0.15"
+  },
+  "main": "webpack.config.js"
 }

@@ -1,3 +1,7 @@
+import { Emoji } from './emoji';
+import { LandingZone } from './landing_zone';
+import { Util } from './util';
+
 var accTime=0, lastTime=Date.now(), paused=false,
     timeInterval=desiredTimeInterval,
     desiredTimeInterval=15, keyDown=false;
@@ -41,12 +45,12 @@ document.addEventListener('DOMContentLoaded', () => {
   shocked = new Image();
   bigHappy = new Image();
   smallHappy = new Image();
-  happy.src = "./emojis/eyeglasses-black-face-emoticon.png";
-  worried.src = "./emojis/worried-black-face.png";
-  dead.src = "./emojis/astonished-black-emoticon-face.png";
-  shocked.src = "./emojis/flashed-black-emoticon-face.png";
-  bigHappy.src = "./emojis/moustache-male-black-emoticon-face.png";
-  smallHappy.src = "./emojis/laughing-emoticon-black-happy-face.png";
+  happy.src = "../emojis/eyeglasses-black-face-emoticon.png";
+  worried.src = "../emojis/worried-black-face.png";
+  dead.src = "../emojis/astonished-black-emoticon-face.png";
+  shocked.src = "../emojis/flashed-black-emoticon-face.png";
+  bigHappy.src = "../emojis/moustache-male-black-emoticon-face.png";
+  smallHappy.src = "../emojis/laughing-emoticon-black-happy-face.png";
   var collect = imgCollect(6);
   happy.onload = () => ( collect = collect() );
   worried.onload = () => ( collect = collect() );
@@ -102,7 +106,9 @@ function newGame() {
       keyDown = false; selectedEmoji = null;
     }
   };
-  ctx.canvas.addEventListener("mousemove", getMousePos);
+  ctx.canvas.addEventListener("mousemove", (e) => {
+    mousePos = Util.getMousePos(e);
+  });
   ctx.canvas.addEventListener("mousemove", () => buildRoute(mousePos));
   emojis = [];
   emojis.push( spawnEmoji() );
@@ -111,26 +117,9 @@ function newGame() {
   score = 0;
   timeInterval = desiredTimeInterval;
 }
-class LandingZone {
-  constructor(options) {
-    this.radius = options.radius;
-    this.x = options.x;
-    this.y = options.y;
-    this.color = options.color;
-  }
-  draw(ctx) {
-    ctx.strokeStyle=this.color;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-    ctx.arc(this.x, this.y, this.radius-10, 0, 2 * Math.PI);
-    ctx.arc(this.x, this.y, this.radius-20, 0, 2 * Math.PI);
-    ctx.stroke();
-  }
-}
 // function mouseCollidesWith(lz) {
 //   console.log(`mouseCollidesWith was called`);
-//   var distance = distanceBetween(mousePos, lz);
+//   var distance = Util.distanceBetween(mousePos, lz);
 //   if ( distance < mousePos + lz.radius ) {
 //     console.log(`it does collide`);
 //     return true;
@@ -153,15 +142,19 @@ function pause() {
   }
 }
 function secretRegularSpeed(e) {
-  if ( mousePos.x > 30 && mousePos.x < 60 && mousePos.y > ctx.canvas.height-25) {
+  if ( mousePos.x > 30
+    && mousePos.x < 60
+    && mousePos.y > ctx.canvas.height-25) {
     timeInterval = desiredTimeInterval;
     play();
   }
 }
 function secretSlowerSpeed(e) {
-  if ( mousePos.x > 60 && mousePos.x < 90 && mousePos.y > ctx.canvas.height-25) {
+  if ( mousePos.x > 60
+    && mousePos.x < 90
+    && mousePos.y > ctx.canvas.height-25) {
     timeInterval += timeInterval;
-    play()
+    play();
     // console.log(timeInterval);
   }
 }
@@ -250,7 +243,7 @@ function drawScore() {
   ctx.globalAlpha = 1;
 }
 function handleProximity(i) {
-  if ( emojis[i].route.length >= 2 && !emojis[i].lz ) {
+  if ( emojis[i].route.length >= 2 ) {
     for (var lzi = 0; lzi < lzs.length; lzi++) {
       if (
       !emojis[i].landing
@@ -261,7 +254,6 @@ function handleProximity(i) {
         emojis[i].landing = true;
         emojis[i].route = pointsBetween(emojis[i], lzs[lzi]);
         score++;
-        emojis[i].lz = lzs[lzi];
         if (score < 10) {
           emojis.push( spawnEmoji() );
         }
@@ -306,14 +298,8 @@ function spawnPoint(ctx) {
     [[-5, ctx.canvas.width-5], [ctx.canvas.height+5, ctx.canvas.height+55]]
   ];
   const area = spawnAreas[Math.floor(Math.random()*spawnAreas.length)];
-  const [x, y] = area.map( range => getRandomInt(...range) );
+  const [x, y] = area.map( range => Util.getRandomInt(...range) );
   return { x, y };
-}
-function getRandomFloat(min, max) {
-  return Math.random() * (max - min) + min;
-}
-function getRandomInt(min, max) {
-  return Math.floor(Math.random() * (max - min) + min);
 }
 function spawnEmoji() {
   console.log(`spawnEmoji was called`);
@@ -341,200 +327,17 @@ function spawnEmoji() {
 function spawnLZs(n) {
   const LZArr = [];
   for (var i = 0; i < colors.length; i++) {
-    const x = getRandomInt(100, ctx.canvas.width-100);
-    const y = getRandomInt(100, ctx.canvas.height-100);
+    const x = Util.getRandomInt(100, ctx.canvas.width-100);
+    const y = Util.getRandomInt(100, ctx.canvas.height-100);
     LZArr.push( new LandingZone(
       { radius:25, color: colors[i], x, y }
     ));
   }
   return LZArr;
 }
-function checkWithinBounds(point, radius=0) {
-  return (
-       point.x-radius >= 0
-    && point.x+radius <= ctx.canvas.width
-    && point.y-radius >= 0
-    && point.y+radius <= ctx.canvas.height
-  );
-}
-class Emoji {
-  constructor(options) {
-    this.withinBounds = false;
-    this.canCollide = false;
-    this.ctx = options.ctx;
-    this.faces = options.faces;
-    this.face = options.faces.happy;
-    this.radius = options.radius;
-    this.x = options.x;
-    this.y = options.y;
-    this.route = [];
-    this.speed = (options.speed || 1);
-    this.vector = this.randomVector();
-    this.color = options.color;
-    this.landing = false;
-  }
-  randomVector() {
-    const angle = getRandomFloat(0, 2*Math.PI);
-    var vx = Math.cos(angle) * this.speed;
-    var vy = Math.sin(angle) * this.speed;
-    const mx = this.ctx.canvas.width/2;
-    const my = this.ctx.canvas.height/2;
-    if (this.x >= mx) {
-      vx = Math.abs(vx) * -1;
-    } else {
-      vx = Math.abs(vx);
-    }
-    if (this.y >= my) {
-      vy = Math.abs(vy) * -1;
-    } else {
-      vy = Math.abs(vy);
-    }
-    return { vx, vy };
-  }
-  draw() {
-    this.ctx.strokeStyle = this.color;
-    this.ctx.fillStyle = this.color;
-    if ( this.route.length >= 2 ) {
-      this.ctx.lineWidth = Math.floor(this.radius/8.3);
-      for (var i = 1; i < this.route.length; i+=10) {
-        let a = this.route[i-5] || this;
-        let b = this.route[i];
-        this.ctx.beginPath();
-        this.ctx.moveTo(a.x, a.y);
-        this.ctx.lineTo(b.x, b.y);
-        this.ctx.stroke();
-      }
-    }
-    if (!this.canCollide) {
-      this.ctx.strokeStyle = 'grey';
-    } else {
-      this.ctx.strokeStyle = this.color;
-    }
-    this.ctx.lineWidth = 3;
-    this.ctx.beginPath();
-    this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-    this.ctx.fill();
-    this.ctx.stroke();
-    this.ctx.drawImage(
-      this.face,
-      this.x-(this.radius-1.5),
-      this.y-(this.radius-1.5),
-      this.radius*2-3, this.radius*2-3
-    );
-  }
-  wayOff() {
-   if (
-        this.x < 0-55
-     || this.x > this.ctx.canvas.width+55
-   ) {
-     return true;
-   }
-   if (
-        this.y < 0-55
-     || this.y > this.ctx.canvas.height+55
-   ) {
-     return true;
-   }
-  }
-  bounce() {
-    if ( this.withinBounds ) {
-      if (
-           this.x-this.radius <= 0
-        || this.x+this.radius >= this.ctx.canvas.width
-      ) {
-        this.vector.vx *= -1;
-      }
-      if (
-           this.y-this.radius <= 0
-        || this.y+this.radius >= this.ctx.canvas.height
-      ) {
-        this.vector.vy *= -1;
-      }
-    }
-  }
-  move() {
-    if (!this.landing && !this.canCollide) {
-      this.canCollide = checkWithinBounds(this,0);
-    }
-    if (!this.withinBounds) {
-      this.withinBounds = checkWithinBounds(this, this.radius);
-    }
-    if (this.route.length >= 2) {
-      if (this.route.length === 2) {
-      this.getPassiveVector();
-      }
-      this.activeMove();
-    } else {
-      this.passiveMove();
-    }
-    if (this.lz) {
-      this.land();
-    }
-  }
-  activeMove() {
-    this.route.splice(0, 1);
-    const { x, y } = this.route[0];
-    this.x = x;
-    this.y = y;
-  }
-  getPassiveVector() {
-    const ax = this.route[1].x;
-    const bx = this.route[0].x;
-    const by = this.route[0].y;
-    const ay = this.route[1].y;
-    this.vector = {
-      vx: ax-bx,
-      vy: ay-by
-    };
-  }
-  passiveMove() {
-    this.bounce();
-    this.x += this.vector.vx;
-    this.y += this.vector.vy;
-  }
-  land() {
-    if (this.route.length <= 5) {
-      this.vector = { vx:0, vy:0 };
-    }
-    this.canCollide = false;
-    this.radius *= 0.98;
-  }
-  collidesWith(that) {
-    var distance = distanceBetween(this, that);
-    if ( distance < this.radius + that.radius ) {
-      if (that instanceof Emoji) {
-        if ( this.canCollide && that.canCollide ) {
-          return true;
-        }
-      } else {
-        return true;
-      }
-    }
-    return false;
-  }
-  nearlyCollidesWith(that) {
-    var distance = distanceBetween(this, that) - 30;
-    if ( distance < this.radius + that.radius ) {
-      return true;
-    }
-    return false;
-  }
-  inVicinityOf(that) {
-    var distance = distanceBetween(this, that) - 100;
-    if ( distance < this.radius + that.radius ) {
-      return true;
-    }
-    return false;
-  }
-  changeFace(face) {
-    if (this.face !== face) {
-      this.face = face;
-    }
-  }
-}
 function selectEmoji(e) {
   if (mousePos === undefined) {
-    mousePos = getMousePos(e);
+    mousePos = Util.getMousePos(e);
   }
   console.log(`mousedown @ ${mousePos.x}, ${mousePos.y}`);
   emojis.forEach( emoji => {
@@ -545,15 +348,9 @@ function selectEmoji(e) {
     }
   });
 }
-function getMousePos(e) {
-  const parentPos = getPosition(e.currentTarget);
-  const x = e.clientX - parentPos.x;
-  const y = e.clientY - parentPos.y;
-  mousePos = { x, y };
-}
 function pointsBetween(a, b) {
-  const distance = distanceBetween(a, b);
-  const angle = angleBetween(a, b);
+  const distance = Util.distanceBetween(a, b);
+  const angle = Util.angleBetween(a, b);
   const points = [];
   for (var i = 0; i < distance; i+=1) {
     let x = a.x + (Math.sin(angle) * i);
@@ -566,8 +363,8 @@ function buildRoute(pointB) {
   if (selectedEmoji) {
     var pointA = selectedEmoji.route[selectedEmoji.route.length-1]
               || selectedEmoji;
-    const distance = distanceBetween(pointA, pointB);
-    const angle = angleBetween(pointA, pointB);
+    const distance = Util.distanceBetween(pointA, pointB);
+    const angle = Util.angleBetween(pointA, pointB);
 
     for (var i = 0; i < distance; i+=selectedEmoji.speed) {
       let x = pointA.x + (Math.sin(angle) * i);
@@ -576,31 +373,9 @@ function buildRoute(pointB) {
       let a = selectedEmoji.route[selectedEmoji.route.length-1] || pointA;
       let b = { x, y };
 
-      if ( distanceBetween(a, b) > 0 ) {
+      if ( Util.distanceBetween(a, b) > 0 ) {
         selectedEmoji.route.push(b);
       }
     }
   }
-}
-function distanceBetween(a, b) {
-  return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
-}
-function angleBetween(a, b) {
-  return Math.atan2( b.x - a.x, b.y - a.y );
-}
-function getPosition(el) {
-  var x = 0, y = 0;
-  while (el) {
-    if (el.tagName === "BODY") {
-      var xScroll = el.scrollLeft || document.documentElement.scrollLeft;
-      var yScroll = el.scrollTop || document.documentElement.scrollTop;
-      x += (el.offsetLeft - xScroll + el.clientLeft);
-      y += (el.offsetTop - yScroll + el.clientTop);
-    } else {
-      x += (el.offsetLeft - el.scrollLeft + el.clientLeft);
-      y += (el.offsetTop - el.scrollTop + el.clientTop);
-    }
-    el = el.offsetParent;
-  }
-  return { x, y };
 }
