@@ -1,7 +1,7 @@
 var accTime=0, lastTime=Date.now(), paused=false,
     timeInterval=desiredTimeInterval,
     desiredTimeInterval=15, keyDown=false;
-var ready, ctx, ticker, lzs, score, mousePos,
+var database, ready, ctx, ticker, lzs, score, mousePos,
     gameOver, emojiTypes, emojis, selectedEmoji,
     happy, bigHappy, smallHappy, worried, dead, shocked;
 const colors = ['blue', 'red'];
@@ -21,7 +21,7 @@ function tick() {
         emojis[i].draw();
         if (emojis[i].wayOff()) {
           emojis.splice(i, 1);
-          console.log('deleted wayOff emoji');
+          // console.log('deleted wayOff emoji');
           emojis.push( spawnEmoji() );
         }
       }
@@ -34,6 +34,7 @@ function tick() {
   ticker = requestAnimationFrame(tick);
 }
 ticker = requestAnimationFrame(tick);
+
 document.addEventListener('DOMContentLoaded', () => {
   happy = new Image();
   worried = new Image();
@@ -69,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 });
+
 function imgCollect(n) {
   var count = 0;
   const collector = () => {
@@ -84,8 +86,22 @@ function imgCollect(n) {
   };
   return collector;
 }
+
+// function _initializeFirebase() {
+//   var config = {
+//     apiKey: "AIzaSyCB12xLe4RMZH-duZNASYqWU5KXVvMfo4g",
+//     authDomain: "pathfinder-f3799.firebaseapp.com",
+//     databaseURL: "https://pathfinder-f3799.firebaseio.com",
+//     projectId: "pathfinder-f3799",
+//     storageBucket: "pathfinder-f3799.appspot.com",
+//     messagingSenderId: "63444165594"
+//   };
+//   firebase.initializeApp(config);
+// }
+
 function newGame() {
   gameOver = false;
+  // database = firebase.database();
   ctx.canvas.removeEventListener("mousedown", newGame);
   ctx.canvas.addEventListener("mousedown", selectEmoji);
   document.body.onkeydown = (e) => {
@@ -111,6 +127,7 @@ function newGame() {
   score = 0;
   timeInterval = desiredTimeInterval;
 }
+
 class LandingZone {
   constructor(options) {
     this.radius = options.radius;
@@ -257,7 +274,7 @@ function handleProximity(i) {
       && emojis[i].color === lzs[lzi].color
       && emojis[i].collidesWith(lzs[lzi])
       ) {
-        console.log( 'emoji landing' );
+        // console.log( 'emoji landing' );
         emojis[i].landing = true;
         emojis[i].route = pointsBetween(emojis[i], lzs[lzi]);
         score++;
@@ -316,7 +333,7 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min) + min);
 }
 function spawnEmoji() {
-  console.log(`spawnEmoji was called`);
+  // console.log(`spawnEmoji was called`);
   const color = colors[Math.floor(Math.random()*colors.length)];
   var types = ['regular', 'regular', 'big', 'small'];
   var type = types[Math.floor(Math.random()*types.length)];
@@ -334,8 +351,6 @@ function spawnEmoji() {
     }
   }
   let emoji = Object.assign({}, {ctx}, {color}, p);
-  // console.log(`new emoji below:`);
-  // console.log(emoji);
   return new Emoji(emoji);
 }
 function spawnLZs(n) {
@@ -536,7 +551,7 @@ function selectEmoji(e) {
   if (mousePos === undefined) {
     mousePos = getMousePos(e);
   }
-  console.log(`mousedown @ ${mousePos.x}, ${mousePos.y}`);
+  // console.log(`mousedown @ ${mousePos.x}, ${mousePos.y}`);
   emojis.forEach( emoji => {
     if ( Math.abs(mousePos.x-emoji.x) <= emoji.radius
       && Math.abs(mousePos.y-emoji.y) <= emoji.radius ) {
