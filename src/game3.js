@@ -87,21 +87,15 @@ function imgCollect(n) {
   return collector;
 }
 
-// function _initializeFirebase() {
-//   var config = {
-//     apiKey: "AIzaSyCB12xLe4RMZH-duZNASYqWU5KXVvMfo4g",
-//     authDomain: "pathfinder-f3799.firebaseapp.com",
-//     databaseURL: "https://pathfinder-f3799.firebaseio.com",
-//     projectId: "pathfinder-f3799",
-//     storageBucket: "pathfinder-f3799.appspot.com",
-//     messagingSenderId: "63444165594"
-//   };
-//   firebase.initializeApp(config);
-// }
+function writeHighScore(player, score) {
+  database.ref('highscores/' + player).set({
+    player: score
+  });
+}
 
 function newGame() {
+  database = firebase.database();
   gameOver = false;
-  // database = firebase.database();
   ctx.canvas.removeEventListener("mousedown", newGame);
   ctx.canvas.addEventListener("mousedown", selectEmoji);
   document.body.onkeydown = (e) => {
@@ -304,6 +298,7 @@ function handleProximity(i) {
     }
     if ( emojis[i].collidesWith(emojis[j]) ) {
       gameOver = true;
+      writeHighScore('test', score);
       ctx.canvas.addEventListener("mousedown", newGame);
       ctx.canvas.removeEventListener("mousedown", selectEmoji);
       ctx.canvas.removeEventListener("mouseup", () => ( selectedEmoji = null ));
