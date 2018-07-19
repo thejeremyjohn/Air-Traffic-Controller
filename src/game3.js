@@ -2,7 +2,7 @@ var accTime=0, lastTime=Date.now(), paused=false,
     timeInterval=desiredTimeInterval,
     desiredTimeInterval=15, keyDown=false;
 var database, ready, ctx, ticker, lzs, score, mousePos,
-    gameOver, emojiTypes, emojis, selectedEmoji,
+    player, gameOver, emojiTypes, emojis, selectedEmoji,
     happy, bigHappy, smallHappy, worried, dead, shocked;
 const colors = ['blue', 'red'];
 function tick() {
@@ -89,7 +89,7 @@ function imgCollect(n) {
 
 function writeHighScore(player, score) {
   database.ref('highscores/' + player).set({
-    player: score
+    'score': score
   });
 }
 
@@ -298,7 +298,10 @@ function handleProximity(i) {
     }
     if ( emojis[i].collidesWith(emojis[j]) ) {
       gameOver = true;
-      writeHighScore('test', score);
+      if (!player) {
+        player = prompt("Please enter your name", player);
+      }
+      writeHighScore(player, score);
       ctx.canvas.addEventListener("mousedown", newGame);
       ctx.canvas.removeEventListener("mousedown", selectEmoji);
       ctx.canvas.removeEventListener("mouseup", () => ( selectedEmoji = null ));
