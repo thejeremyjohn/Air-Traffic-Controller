@@ -88,8 +88,8 @@ function imgCollect(n) {
 }
 
 function writeHighScore(player, score) {
-  database.ref('highscores/' + player).set({
-    'score': score
+  database.ref(score).set({
+    player
   });
 }
 
