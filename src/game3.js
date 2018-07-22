@@ -4,6 +4,8 @@ var accTime=0, lastTime=Date.now(), paused=false,
 var database, ready, ctx, ticker, lzs, score, mousePos,
     player, gameOver, emojiTypes, emojis, selectedEmoji,
     happy, bigHappy, smallHappy, worried, dead, shocked;
+var scoreSaved = false;
+
 const colors = ['blue', 'red'];
 function tick() {
   if (ready) {
@@ -88,13 +90,22 @@ function imgCollect(n) {
 }
 
 function writeHighScore(player, score) {
-  database.ref(score).set({
-    player
+  let key = database.ref().push().key;
+  database.ref().update({
+    [key]: {player, score}
+  });
+
+  database.ref().orderByChild('score').on('child_added', function(data) {
+    let childScore = data.val();
+    console.log(
+      childScore
+    );
   });
 }
 
 function newGame() {
   database = firebase.database();
+  scoreSaved = false;
   gameOver = false;
   ctx.canvas.removeEventListener("mousedown", newGame);
   ctx.canvas.addEventListener("mousedown", selectEmoji);
@@ -301,7 +312,10 @@ function handleProximity(i) {
       if (!player) {
         player = prompt("Please enter your name", player);
       }
-      writeHighScore(player, score);
+      if (!scoreSaved) {
+        writeHighScore(player, score);
+        scoreSaved = true
+      }
       ctx.canvas.addEventListener("mousedown", newGame);
       ctx.canvas.removeEventListener("mousedown", selectEmoji);
       ctx.canvas.removeEventListener("mouseup", () => ( selectedEmoji = null ));
