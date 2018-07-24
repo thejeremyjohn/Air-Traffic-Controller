@@ -90,6 +90,7 @@ function imgCollect(n) {
 }
 
 function writeHighScore(player, score) {
+  // comment
   let key = database.ref().push().key;
   database.ref().update({
     [key]: {player, score}
