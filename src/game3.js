@@ -31,6 +31,7 @@ function tick() {
         emojis.push( spawnEmoji() );
       }
       drawScore();
+      // drawHighScores();
     }
   }
   ticker = requestAnimationFrame(tick);
@@ -90,22 +91,55 @@ function imgCollect(n) {
 }
 
 function writeHighScore(player, score) {
-  // comment
-  let key = database.ref().push().key;
-  database.ref().update({
+  let key = database.push().key;
+  database.update({
     [key]: {player, score}
   });
+  // const highscores = [];
+  // database.orderByChild('score').on('child_added', function(data) {
+  //   highscores.unshift(data.val());
+  // });
+  // console.log(highscores);
+}
 
-  database.ref().orderByChild('score').on('child_added', function(data) {
-    let childScore = data.val();
-    console.log(
-      childScore
-    );
-  });
+function getHighScores() {
+  let hs;
+  // database.orderByChild('score').limitToLast(10)
+  //   .on('value', (data) => {
+  //     hs = Object.values(data.val()).reverse();
+  //   });
+  database
+    .on('value', (data) => {
+      hs = Object.values(data.val()).sort(
+        (a,b) => (b.score - a.score)
+      );
+    });
+  return hs;
+}
+
+function drawHighScores() {
+  let hs = getHighScores();
+  if (hs) {
+    hs = hs.slice(0, 15);
+    ctx.textAlign='left';
+    ctx.fillStyle='orange';
+    ctx.font = '20px Arial';
+    ctx.fillText('RANK', 20, 80);
+    ctx.fillText('NAME', ctx.canvas.width/2-40, 80);
+    ctx.fillText('SCORE', ctx.canvas.width-100, 80);
+    let height = 100;
+    ctx.fillStyle='white';
+    for (let i=0; i<hs.length; i++) {
+      ctx.fillText(`${i+1}.`, 20, height);
+      ctx.fillText(`${hs[i].player}`, ctx.canvas.width/2-40, height);
+      ctx.fillText(`${hs[i].score}`, ctx.canvas.width-100, height);
+      height += 20;
+    }
+  }
 }
 
 function newGame() {
-  database = firebase.database();
+  database = firebase.database().ref();
   scoreSaved = false;
   gameOver = false;
   ctx.canvas.removeEventListener("mousedown", newGame);
@@ -269,6 +303,9 @@ function drawScore() {
       ctx.canvas.width/2,
       ctx.canvas.height-40
     );
+
+    drawHighScores();
+
   }
   ctx.globalAlpha = 1;
 }
