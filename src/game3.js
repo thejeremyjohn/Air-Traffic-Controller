@@ -1,7 +1,7 @@
 var accTime=0, lastTime=Date.now(), paused=false,
     timeInterval=desiredTimeInterval,
     desiredTimeInterval=15, keyDown=false;
-var database, ready, ctx, ticker, lzs, score, mousePos,
+var database, ready, ctx, ticker, lzs, score, highScores, mousePos,
     player, gameOver, emojiTypes, emojis, selectedEmoji,
     happy, bigHappy, smallHappy, worried, dead, shocked;
 var scoreSaved = false;
@@ -31,7 +31,6 @@ function tick() {
         emojis.push( spawnEmoji() );
       }
       drawScore();
-      // drawHighScores();
     }
   }
   ticker = requestAnimationFrame(tick);
@@ -103,24 +102,22 @@ function writeHighScore(player, score) {
 }
 
 function getHighScores() {
-  let hs;
+  // let scores;
   // database.orderByChild('score').limitToLast(10)
   //   .on('value', (data) => {
-  //     hs = Object.values(data.val()).reverse();
+  //     scores = Object.values(data.val()).reverse();
   //   });
-  database
-    .on('value', (data) => {
-      hs = Object.values(data.val()).sort(
-        (a,b) => (b.score - a.score)
-      );
-    });
-  return hs;
+  // return scores;
+  database.on('value', (data) => {
+    highScores = Object.values(data.val()).sort(
+      (a,b) => (b.score - a.score)
+    );
+  });
 }
 
-function drawHighScores() {
-  let hs = getHighScores();
-  if (hs) {
-    hs = hs.slice(0, 15);
+function drawHighScores(scores) {
+  if (scores) {
+    scores = scores.slice(0, 15);
     ctx.textAlign='left';
     ctx.fillStyle='orange';
     ctx.font = '20px Arial';
@@ -129,10 +126,10 @@ function drawHighScores() {
     ctx.fillText('SCORE', ctx.canvas.width-100, 80);
     let height = 100;
     ctx.fillStyle='white';
-    for (let i=0; i<hs.length; i++) {
+    for (let i=0; i<scores.length; i++) {
       ctx.fillText(`${i+1}.`, 20, height);
-      ctx.fillText(`${hs[i].player}`, ctx.canvas.width/2-40, height);
-      ctx.fillText(`${hs[i].score}`, ctx.canvas.width-100, height);
+      ctx.fillText(`${scores[i].player}`, ctx.canvas.width/2-40, height);
+      ctx.fillText(`${scores[i].score}`, ctx.canvas.width-100, height);
       height += 20;
     }
   }
@@ -303,9 +300,7 @@ function drawScore() {
       ctx.canvas.width/2,
       ctx.canvas.height-40
     );
-
-    drawHighScores();
-
+    drawHighScores(highScores);
   }
   ctx.globalAlpha = 1;
 }
@@ -347,12 +342,22 @@ function handleProximity(i) {
     }
     if ( emojis[i].collidesWith(emojis[j]) ) {
       gameOver = true;
-      if (!player) {
-        player = prompt("Please enter your name", player);
-      }
+      // let input = document.createElement('input');
+      // input.type = 'text';
+      // input.style.position = 'fixed';
+      // input.style.left = ctx.canvas.width/2 + 'px';
+      // input.style.top = ctx.canvas.height/2 + 'px';
+      // input.onkeydown = handleEnter;
+      // document.body.appendChild(input);
+      // input.focus();
+      // while (!player) {
+      //   continue;
+      // }
       if (!scoreSaved) {
-        writeHighScore(player, score);
-        scoreSaved = true
+        player = prompt(`You scored ${score}. Enter your name.`, player);
+        writeHighScore(player||'????', score);
+        getHighScores();
+        scoreSaved = true;
       }
       ctx.canvas.addEventListener("mousedown", newGame);
       ctx.canvas.removeEventListener("mousedown", selectEmoji);
@@ -365,6 +370,15 @@ function handleProximity(i) {
     }
   }
 }
+
+function handleEnter(e) {
+  let keyCode = e.keyCode;
+  if (keyCode === 13) {
+    player = this.value;
+    document.body.removeChild(this);
+  }
+}
+
 function spawnPoint(ctx) {
   const spawnAreas = [
     [[-55, -5], [-55, ctx.canvas.height+55]],
