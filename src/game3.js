@@ -139,6 +139,7 @@ function drawHighScores(scores) {
 function sound(src) {
   this.sound = document.createElement("audio");
   this.sound.src = src;
+  this.sound.playbackRate = 1;
   this.sound.setAttribute("preload", "auto");
   this.sound.setAttribute("controls", "none");
   // this.sound.setAttribute("onended", (cb) => {
@@ -170,6 +171,8 @@ function playMusic() {
       music.play();
     };
     music.play();
+  } else {
+    music.sound.playbackRate = 1;
   }
 }
 
