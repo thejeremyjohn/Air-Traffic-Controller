@@ -1,10 +1,11 @@
 var accTime=0, lastTime=Date.now(), paused=false,
     timeInterval=desiredTimeInterval,
     desiredTimeInterval=15, keyDown=false;
-var database, ready, ctx, ticker, lzs, score, highScores, mousePos,
+var ready, ctx, ticker, lzs, score, highScores, mousePos,
     player, gameOver, emojiTypes, emojis, selectedEmoji,
     happy, bigHappy, smallHappy, worried, dead, shocked;
-var scoreSaved = false;
+var database, scoreSaved=false;
+var music, eeung, collision, giggle;
 
 const colors = ['blue', 'red'];
 function tick() {
@@ -135,10 +136,51 @@ function drawHighScores(scores) {
   }
 }
 
+function sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  // this.sound.setAttribute("onended", (cb) => {
+  //   // this.sound.play();
+  //   cb();
+  // });
+  // below works
+  // this.sound.onended = () => {
+  //   this.sound.play();
+  // };
+  // this.sound.onended = (cb) => {
+  //   cb();
+  // };
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+  this.play = function(){
+      this.sound.play();
+  }
+  this.stop = function(){
+      this.sound.pause();
+  }
+}
+
+function playMusic() {
+  if (!music) {
+    music = new sound("./sound/bensound-dreams.mp3");
+    music.sound.volume = 0.5;
+    music.sound.onended = () => {
+      music.play();
+    };
+    music.play();
+  }
+}
+
 function newGame() {
   database = firebase.database().ref();
   scoreSaved = false;
   gameOver = false;
+  eeung = new sound("./sound/eeung.wav");
+  collision = new sound("./sound/collision.wav");
+  giggle = new sound("./sound/cute-giggle.wav");
+  playMusic();
   ctx.canvas.removeEventListener("mousedown", newGame);
   ctx.canvas.addEventListener("mousedown", selectEmoji);
   document.body.onkeydown = (e) => {
@@ -313,6 +355,7 @@ function handleProximity(i) {
       && emojis[i].collidesWith(lzs[lzi])
       ) {
         // console.log( 'emoji landing' );
+        if (!emojis[i].landing) { giggle.play(); }
         emojis[i].landing = true;
         emojis[i].route = pointsBetween(emojis[i], lzs[lzi]);
         score++;
@@ -337,10 +380,18 @@ function handleProximity(i) {
     if ( i === j || !emojis[i] ) continue;
     if ( emojis[i].nearlyCollidesWith(emojis[j]) ) {
       emojis[i].changeFace(emojis[i].faces.worried);
+      eeung.play();
     } else {
       emojis[i].changeFace(emojis[i].faces.happy);
     }
     if ( emojis[i].collidesWith(emojis[j]) ) {
+      emojis[i].vector = { vx:0, vy:0 };
+      emojis[i].route = [];
+      emojis[i].changeFace(emojis[i].faces.dead);
+      if (!gameOver) {
+        eeung.sound.volume = 0;
+        collision.play();
+      }
       gameOver = true;
       // let input = document.createElement('input');
       // input.type = 'text';
@@ -363,9 +414,6 @@ function handleProximity(i) {
       ctx.canvas.removeEventListener("mousedown", selectEmoji);
       ctx.canvas.removeEventListener("mouseup", () => ( selectedEmoji = null ));
       ctx.canvas.removeEventListener("mousemove", buildRoute);
-      emojis[i].changeFace(emojis[i].faces.dead);
-      emojis[i].vector = { vx:0, vy:0 };
-      emojis[i].route = [];
       return;
     }
   }
