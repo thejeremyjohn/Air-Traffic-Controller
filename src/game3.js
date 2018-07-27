@@ -165,7 +165,7 @@ function sound(src) {
 function playMusic() {
   if (!music) {
     music = new sound("./sound/bensound-dreams.mp3");
-    music.sound.volume = 0.5;
+    music.sound.volume = 0.35;
     music.sound.onended = () => {
       music.play();
     };
@@ -188,8 +188,8 @@ function newGame() {
       keyDown = true; selectEmoji(e);
     }
   };
-  ctx.canvas.addEventListener("mousedown", secretRegularSpeed);
-  ctx.canvas.addEventListener("mousedown", secretSlowerSpeed);
+  ctx.canvas.addEventListener("mousedown", regularSpeed);
+  ctx.canvas.addEventListener("mousedown", slowerSpeed);
   ctx.canvas.addEventListener("mousedown", pause);
   ctx.canvas.addEventListener("mouseup", () => (selectedEmoji = null));
   document.body.onkeyup = (e) => {
@@ -248,16 +248,24 @@ function pause() {
     }
   }
 }
-function secretRegularSpeed(e) {
+function regularSpeed(e) {
   if ( mousePos.x > 30 && mousePos.x < 60 && mousePos.y > ctx.canvas.height-25) {
     timeInterval = desiredTimeInterval;
+    music.sound.playbackRate = 1;
+    eeung.sound.playbackRate = 1;
+    collision.sound.playbackRate = 1;
+    giggle.sound.playbackRate = 1;
     play();
   }
 }
-function secretSlowerSpeed(e) {
+function slowerSpeed(e) {
   if ( mousePos.x > 60 && mousePos.x < 90 && mousePos.y > ctx.canvas.height-25) {
     timeInterval += timeInterval;
-    play()
+    music.sound.playbackRate /= 2;
+    eeung.sound.playbackRate /= 2;
+    collision.sound.playbackRate /= 2;
+    giggle.sound.playbackRate /= 2;
+    play();
     // console.log(timeInterval);
   }
 }
