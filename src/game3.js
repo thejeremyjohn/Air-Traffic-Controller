@@ -122,9 +122,9 @@ function drawHighScores(scores) {
     ctx.textAlign='left';
     ctx.fillStyle='orange';
     ctx.font = '20px Arial';
-    ctx.fillText('RANK', 20, 80);
-    ctx.fillText('NAME', ctx.canvas.width/2-40, 80);
-    ctx.fillText('SCORE', ctx.canvas.width-100, 80);
+    ctx.fillText('RANK', 20, 70);
+    ctx.fillText('NAME', ctx.canvas.width/2-40, 70);
+    ctx.fillText('SCORE', ctx.canvas.width-100, 70);
     let height = 100;
     ctx.fillStyle='white';
     for (let i=0; i<scores.length; i++) {
@@ -413,8 +413,10 @@ function handleProximity(i) {
       //   continue;
       // }
       if (!scoreSaved) {
-        player = prompt(`You scored ${score}. Enter your name.`, player);
-        writeHighScore(player||'????', score);
+        player = prompt(
+          `You scored ${score}. Enter your name (no spaces).`, player
+        ).split(' ')[0].slice(0, 15);
+        writeHighScore(player||'?????', score);
         getHighScores();
         scoreSaved = true;
       }
