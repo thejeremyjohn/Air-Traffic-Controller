@@ -51,13 +51,25 @@ document.addEventListener('DOMContentLoaded', () => {
   shocked.src = "./emojis/flashed-black-emoticon-face.png";
   bigHappy.src = "./emojis/moustache-male-black-emoticon-face.png";
   smallHappy.src = "./emojis/laughing-emoticon-black-happy-face.png";
-  var collect = imgCollect(6);
+
+  music = new sound("./sound/bensound-dreams.mp3", 0.25, true);
+  eeung = new sound("./sound/eeung.wav", 0.50, false);
+  collision = new sound("./sound/collision.wav");
+  giggle = new sound("./sound/cute-giggle.wav");
+
+  // playMusic();
+
+  var collect = assetCollect(10);
   happy.onload = () => ( collect = collect() );
   worried.onload = () => ( collect = collect() );
   dead.onload = () => ( collect = collect() );
   shocked.onload = () => ( collect = collect() );
   bigHappy.onload = () => ( collect = collect() );
   smallHappy.onload = () => ( collect = collect() );
+  music.sound.onprogress = () => ( collect = collect() );
+  eeung.sound.onprogress = () => ( collect = collect() );
+  collision.sound.onprogress = () => ( collect = collect() );
+  giggle.sound.onprogress = () => ( collect = collect() );
   emojiTypes = {
     regular: {
       faces: {happy, worried, dead, shocked},
@@ -74,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 });
 
-function imgCollect(n) {
+function assetCollect(n) {
   var count = 0;
   const collector = () => {
     count++;
@@ -136,54 +148,46 @@ function drawHighScores(scores) {
   }
 }
 
-function sound(src) {
+function sound(src, volume=1, _music=false) {
   this.sound = document.createElement("audio");
   this.sound.src = src;
-  this.sound.playbackRate = 1;
   this.sound.setAttribute("preload", "auto");
   this.sound.setAttribute("controls", "none");
-  // this.sound.setAttribute("onended", (cb) => {
-  //   // this.sound.play();
-  //   cb();
-  // });
-  // below works
-  // this.sound.onended = () => {
-  //   this.sound.play();
-  // };
-  // this.sound.onended = (cb) => {
-  //   cb();
-  // };
   this.sound.style.display = "none";
+  this.sound.volume = volume;
+  if (_music) {
+    this.sound.autoplay = true;
+    this.sound.onended = () => {
+      this.play();
+    };
+  }
   document.body.appendChild(this.sound);
   this.play = function(){
       this.sound.play();
-  }
-  this.stop = function(){
-      this.sound.pause();
-  }
+  };
+  // this.stop = function(){
+  //     this.sound.pause();
+  // };
 }
 
-function playMusic() {
-  if (!music) {
-    music = new sound("./sound/bensound-dreams.mp3");
-    music.sound.volume = 0.35;
-    music.sound.onended = () => {
-      music.play();
-    };
-    music.play();
-  } else {
-    music.sound.playbackRate = 1;
-  }
-}
+// function playMusic() {
+//   if (!music) {
+//     music = new sound("./sound/bensound-dreams.mp3");
+//     music.sound.volume = 0.35;
+//     music.sound.onended = () => {
+//       music.play();
+//     };
+//     music.play();
+//   } else {
+//     music.sound.playbackRate = 1;
+//   }
+// }
 
 function newGame() {
   database = firebase.database().ref();
+  // if (!music) music.play();
   scoreSaved = false;
   gameOver = false;
-  eeung = new sound("./sound/eeung.wav");
-  collision = new sound("./sound/collision.wav");
-  giggle = new sound("./sound/cute-giggle.wav");
-  playMusic();
   ctx.canvas.removeEventListener("mousedown", newGame);
   ctx.canvas.addEventListener("mousedown", selectEmoji);
   document.body.onkeydown = (e) => {
@@ -208,6 +212,10 @@ function newGame() {
   lzs = spawnLZs(2);
   score = 0;
   timeInterval = desiredTimeInterval;
+  music.sound.playbackRate = 1;
+  eeung.sound.playbackRate = 1;
+  collision.sound.playbackRate = 1;
+  giggle.sound.playbackRate = 1;
 }
 
 class LandingZone {
@@ -237,12 +245,14 @@ class LandingZone {
 //   console.log(`it does not collide`);
 //   return false;
 // }
+
 function play() {
   if (paused) {
     ticker = requestAnimationFrame(tick);
     paused = false;
   }
 }
+
 function pause() {
   if ( mousePos.x < 30 && mousePos.y > ctx.canvas.height-25 ) {
     if (!paused) {
@@ -251,8 +261,9 @@ function pause() {
     }
   }
 }
+
 function regularSpeed(e) {
-  if ( mousePos.x > 30 && mousePos.x < 60 && mousePos.y > ctx.canvas.height-25) {
+  if ( mousePos.x > 30 && mousePos.x < 60 && mousePos.y > ctx.canvas.height-25 ) {
     timeInterval = desiredTimeInterval;
     music.sound.playbackRate = 1;
     eeung.sound.playbackRate = 1;
@@ -261,33 +272,25 @@ function regularSpeed(e) {
     play();
   }
 }
+
 function slowerSpeed(e) {
   if ( mousePos.x > 60 && mousePos.x < 90 && mousePos.y > ctx.canvas.height-25) {
-    timeInterval += timeInterval;
+    timeInterval *= 2;
     music.sound.playbackRate /= 2;
     eeung.sound.playbackRate /= 2;
     collision.sound.playbackRate /= 2;
     giggle.sound.playbackRate /= 2;
     play();
-    // console.log(timeInterval);
   }
 }
-function drawSpeedButtons() {
-  // ctx.fillStyle = 'grey';
-  // ctx.fillRect(0, 0, 40, 20);
-  // ctx.fillStyle = 'black';
-  // ctx.font = '10px Arial';
-  // ctx.fillText('normal', 0, 10);
-  // ctx.fillText('speed', 0, 18);
-  const y = ctx.canvas.height;
 
+function drawSpeedButtons() {
+  const y = ctx.canvas.height;
   ctx.fillStyle = 'grey';
   ctx.strokeStyle = 'grey';
-  // pause
   ctx.fillRect(5, y-25, 10, 20);
   ctx.fillRect(20, y-25, 10, 20);
-  // ctx.fill();
-  // play
+
   ctx.beginPath();
   ctx.moveTo(42, y-6);
   ctx.lineTo(42, y-23);
@@ -300,6 +303,7 @@ function drawSpeedButtons() {
   ctx.stroke();
   ctx.fillText('SLO', 67, y-12);
 }
+
 function drawScore() {
   drawSpeedButtons();
 
@@ -396,9 +400,9 @@ function handleProximity(i) {
       emojis[i].changeFace(emojis[i].faces.happy);
     }
     if ( emojis[i].collidesWith(emojis[j]) ) {
+      emojis[i].changeFace(emojis[i].faces.dead);
       emojis[i].vector = { vx:0, vy:0 };
       emojis[i].route = [];
-      emojis[i].changeFace(emojis[i].faces.dead);
       if (!gameOver) {
         eeung.sound.volume = 0;
         collision.play();
