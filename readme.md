@@ -37,6 +37,7 @@ This project will be implemented with the following technologies:
 - `JavaScript` for game logic
 - `Canvas` for rendering shapes and/or
 - `CSS3` for rendering shapes, transformations, animations
+- `Firebase` for reading and writing highscores
 
 ### Implementation Timeline
 
