@@ -17,12 +17,12 @@ As the board gets crowded, it will become necessary to draw more circuitous path
 
 ### Functionality & MVP
 
-Players will be able to:
+Players are able to:
 
 - Play, pause, and slow
 - Click (or hold SPACEBAR) and drag to draw routes for planes
 
-In addition, this project includes on-screen instructions that appear in the early phase of the game.
+In addition, this project includes on-screen instructions that appear in the early phase of the game as well as a highscores leaderboard that appears upon losing and entering player name.
 
 ### Wireframes and gameplay
 <p align="center">
