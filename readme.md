@@ -35,7 +35,7 @@ In addition, this project includes on-screen instructions that appear in the ear
 This project will be implemented with the following technologies:
 
 - `JavaScript` for game logic
-- `Canvas` for rendering shapes and/or
+- `Canvas` for rendering lines, shapes and images
 - `CSS3` for rendering shapes, transformations, animations
 - `Firebase` for reading and writing highscores
 
