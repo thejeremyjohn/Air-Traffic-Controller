@@ -51,14 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
   shocked.src = "./emojis/flashed-black-emoticon-face.png";
   bigHappy.src = "./emojis/moustache-male-black-emoticon-face.png";
   smallHappy.src = "./emojis/laughing-emoticon-black-happy-face.png";
-
   music = new sound("./sound/bensound-dreams.mp3", 0.25, true);
   eeung = new sound("./sound/eeung.wav", 0.50, false);
   collision = new sound("./sound/collision.wav");
   giggle = new sound("./sound/cute-giggle.wav");
-
-  // playMusic();
-
   var collect = assetCollect(10);
   happy.onload = () => ( collect = collect() );
   worried.onload = () => ( collect = collect() );
