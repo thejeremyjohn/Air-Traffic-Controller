@@ -55,7 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
   eeung = new sound("./sound/eeung.wav", 0.50, false);
   collision = new sound("./sound/collision.wav");
   giggle = new sound("./sound/cute-giggle.wav");
+
   var collect = assetCollect(10);
+  
   happy.onload = () => ( collect = collect() );
   worried.onload = () => ( collect = collect() );
   dead.onload = () => ( collect = collect() );
