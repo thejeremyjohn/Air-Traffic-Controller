@@ -32,25 +32,14 @@ In addition, this project includes on-screen instructions that appear in the ear
 
 ### Architecture and Technologies
 
-This project will be implemented with the following technologies:
+This project was implemented with the following technologies:
 
 - `JavaScript` for game logic
 - `Canvas` for rendering lines, shapes and images
-- `CSS3` for rendering shapes, transformations, animations
+- `CSS3` for styling the page
 - `Firebase` for reading and writing highscores
 
-### Implementation Timeline
+### Future Plans
 
-**Day 1**: Experiment with putting some basic shapes on the board.
-
-**Day 2**: Write handler for click and drag events. Devise a strategy for random-ish plane spawning from outside the board. Implement score tracking.
-
-**Day 3**: Implement circular collision boxes for planes and perhaps the same for landing areas. Add Pause/Play button. Begin styling
-
-**Day 4**: Panic about everything that doesn't work yet. Style, style, style.
-
-### Bonus features
-
-- Alternate gameplay speeds
-- Alternate boards with their own styles and landing areas
-- Ability to choose what variety of planes can spawn in
+- Mute button
+- Display highscore ranking alongside the top 5
