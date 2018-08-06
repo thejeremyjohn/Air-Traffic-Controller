@@ -1,4 +1,5 @@
-[Play the game!](https://thejeremyjohn.github.io/pathfinder/)
+[Play the game!](https://jeremyjohn.me/pathfinder/)
+
 ### Background and game mechanics
 
 Pathfinder is based on the mobile game Air Control. 
@@ -8,6 +9,8 @@ Emojis move in from outside the board, approaching in a straight line from some 
 Emojis cannot land themselves. The player's goal is to draw each emojis path to their landing area, avoiding collisions with other emojis. Every emoji landed adds +1 to the player's score and a collision is an instant game over.
 
 As the player's score increases, the frequency with which emojis spawn increases.
+
+[![Pathfinder](https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder_gameplay.gif)](https://jeremyjohn.me/pathfinder/)
 
 ### Additional Details and strategy
 
@@ -23,12 +26,6 @@ Players are able to:
 - Click (or hold SPACEBAR) and drag to draw routes for planes
 
 In addition, this project includes on-screen instructions that appear in the early phase of the game as well as a highscores leaderboard that appears upon losing and entering player name.
-
-### Wireframes and gameplay
-<p align="center">
-  <img src="https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder.png">
-  <img src="https://github.com/thejeremyjohn/Air-Traffic-Controller/blob/master/pathfinder_gameplay.gif">
-</p>
 
 ### Architecture and Technologies
 
