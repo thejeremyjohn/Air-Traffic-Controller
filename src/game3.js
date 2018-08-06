@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
   giggle = new sound("./sound/cute-giggle.wav");
 
   var collect = assetCollect(10);
-  
+
   happy.onload = () => ( collect = collect() );
   worried.onload = () => ( collect = collect() );
   dead.onload = () => ( collect = collect() );
@@ -359,6 +359,7 @@ function drawScore() {
   }
   ctx.globalAlpha = 1;
 }
+
 function handleProximity(i) {
   if ( emojis[i].route.length >= 2 && !emojis[i].lz ) {
     for (var lzi = 0; lzi < lzs.length; lzi++) {
@@ -674,6 +675,7 @@ class Emoji {
     }
   }
 }
+
 function selectEmoji(e) {
   if (mousePos === undefined) {
     mousePos = getMousePos(e);
@@ -687,12 +689,14 @@ function selectEmoji(e) {
     }
   });
 }
+
 function getMousePos(e) {
   const parentPos = getPosition(e.currentTarget);
   const x = e.clientX - parentPos.x;
   const y = e.clientY - parentPos.y;
   mousePos = { x, y };
 }
+
 function pointsBetween(a, b) {
   const distance = distanceBetween(a, b);
   const angle = angleBetween(a, b);
@@ -704,6 +708,7 @@ function pointsBetween(a, b) {
   }
   return points;
 }
+
 function buildRoute(pointB) {
   if (selectedEmoji) {
     var pointA = selectedEmoji.route[selectedEmoji.route.length-1]
@@ -724,12 +729,15 @@ function buildRoute(pointB) {
     }
   }
 }
+
 function distanceBetween(a, b) {
   return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
 }
+
 function angleBetween(a, b) {
   return Math.atan2( b.x - a.x, b.y - a.y );
 }
+
 function getPosition(el) {
   var x = 0, y = 0;
   while (el) {
