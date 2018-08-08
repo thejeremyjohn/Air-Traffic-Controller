@@ -6,8 +6,8 @@ var ready, ctx, ticker, lzs, score, highScores, mousePos,
     happy, bigHappy, smallHappy, worried, dead, shocked;
 var database, scoreSaved=false;
 var music, eeung, collision, giggle;
-
 const colors = ['blue', 'red'];
+
 function tick() {
   if (ready) {
     const deltaTime = Date.now() - lastTime;
