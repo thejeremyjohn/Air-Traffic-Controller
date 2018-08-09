@@ -5,7 +5,7 @@ var ready, ctx, ticker, lzs, score, highScores, mousePos,
     player, gameOver, emojiTypes, emojis, selectedEmoji,
     happy, bigHappy, smallHappy, worried, dead, shocked;
 var database, scoreSaved=false;
-var music, eeung, collision, giggle;
+var music, eeung, collision, giggle, muted=false;
 const colors = ['blue', 'red'];
 
 function tick() {
@@ -52,8 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bigHappy.src = "./emojis/moustache-male-black-emoticon-face.png";
   smallHappy.src = "./emojis/laughing-emoticon-black-happy-face.png";
   music = new sound("./sound/bensound-dreams.mp3", 0.25, true);
-  eeung = new sound("./sound/eeung.wav", 0.50, false);
-  collision = new sound("./sound/collision.wav");
+  eeung = new sound("./sound/eeung.wav", 0.5);
+  collision = new sound("./sound/collision.wav", 0.25);
   giggle = new sound("./sound/cute-giggle.wav");
 
   var collect = assetCollect(10);
@@ -152,17 +152,16 @@ function sound(src, volume=1, _music=false) {
   this.sound.setAttribute("preload", "auto");
   this.sound.setAttribute("controls", "none");
   this.sound.style.display = "none";
+  this.oVol = volume;
   this.sound.volume = volume;
+  document.body.appendChild(this.sound);
+  this.play = () => this.sound.play();
+  this.mute = () => { this.sound.volume = 0; };
+  this.unmute = () => { this.sound.volume = this.oVol; };
   if (_music) {
     this.sound.autoplay = true;
-    this.sound.onended = () => {
-      this.play();
-    };
+    this.sound.onended = () => this.play();
   }
-  document.body.appendChild(this.sound);
-  this.play = function(){
-      this.sound.play();
-  };
   // this.stop = function(){
   //     this.sound.pause();
   // };
@@ -193,9 +192,10 @@ function newGame() {
       keyDown = true; selectEmoji(e);
     }
   };
+  ctx.canvas.addEventListener("mousedown", pause);
   ctx.canvas.addEventListener("mousedown", regularSpeed);
   ctx.canvas.addEventListener("mousedown", slowerSpeed);
-  ctx.canvas.addEventListener("mousedown", pause);
+  ctx.canvas.addEventListener("mousedown", mute);
   ctx.canvas.addEventListener("mouseup", () => (selectedEmoji = null));
   document.body.onkeyup = (e) => {
     if(e.keyCode === 32 || e.key === ' ') {
@@ -254,6 +254,17 @@ function play() {
 function pause() {
   if ( mousePos.x < 30 && mousePos.y > ctx.canvas.height-25 ) {
     if (!paused) {
+      ctx.fillStyle = 'orange';
+      const y = ctx.canvas.height;
+      ctx.fillRect(5, y-25, 10, 20);
+      ctx.fillRect(20, y-25, 10, 20);
+      ctx.fillStyle = 'grey';
+      ctx.beginPath();
+      ctx.moveTo(42, y-6);
+      ctx.lineTo(42, y-23);
+      ctx.lineTo(57, y-14);
+      ctx.fill();
+
       cancelAnimationFrame(ticker);
       paused = true;
     }
@@ -261,7 +272,11 @@ function pause() {
 }
 
 function regularSpeed(e) {
-  if ( mousePos.x > 30 && mousePos.x < 60 && mousePos.y > ctx.canvas.height-25 ) {
+  if (
+    mousePos.x > 30
+    && mousePos.x < 60
+    && mousePos.y > ctx.canvas.height-25
+  ) {
     timeInterval = desiredTimeInterval;
     music.sound.playbackRate = 1;
     eeung.sound.playbackRate = 1;
@@ -272,7 +287,11 @@ function regularSpeed(e) {
 }
 
 function slowerSpeed(e) {
-  if ( mousePos.x > 60 && mousePos.x < 90 && mousePos.y > ctx.canvas.height-25) {
+  if (
+    mousePos.x > 60
+    && mousePos.x < 90
+    && mousePos.y > ctx.canvas.height-25
+  ) {
     timeInterval *= 2;
     music.sound.playbackRate /= 2;
     eeung.sound.playbackRate /= 2;
@@ -282,28 +301,87 @@ function slowerSpeed(e) {
   }
 }
 
-function drawSpeedButtons() {
+function mute(e) {
+  if (
+    mousePos.x > 98
+    && mousePos.x < 124
+    && mousePos.y > ctx.canvas.height-25
+  ) {
+    if (muted === false) {
+      music.mute();
+      eeung.mute();
+      collision.mute();
+      giggle.mute();
+      muted = true;
+    } else {
+      music.unmute();
+      eeung.unmute();
+      collision.unmute();
+      giggle.unmute();
+      muted = false;
+    }
+  }
+}
+
+function drawButtons() {
   const y = ctx.canvas.height;
   ctx.fillStyle = 'grey';
   ctx.strokeStyle = 'grey';
+
+  // pause
+  // if (paused) {
+  //   console.log('paused')
+  //   ctx.fillStyle = 'orange';
+  // }
   ctx.fillRect(5, y-25, 10, 20);
   ctx.fillRect(20, y-25, 10, 20);
 
+  // play normal speed
+  if ( desiredTimeInterval === timeInterval ) {
+    ctx.fillStyle = 'orange';
+  }
   ctx.beginPath();
   ctx.moveTo(42, y-6);
   ctx.lineTo(42, y-23);
   ctx.lineTo(57, y-14);
   ctx.fill();
+  ctx.fillStyle = 'grey';
 
+  // half current speed
+  if ( desiredTimeInterval !== timeInterval ) {
+    ctx.fillStyle = 'orange';
+  }
   ctx.rect(65, y-25, 25, 20);
   ctx.font = 'bold 10px Arial';
   ctx.lineWidth = 2;
   ctx.stroke();
   ctx.fillText('SLO', 67, y-12);
+  ctx.fillStyle = 'grey';
+
+  // sound
+  ctx.fillRect(98, y-18.5, 6, 8);
+  ctx.beginPath();
+  ctx.moveTo(112, y-6);
+  ctx.lineTo(112, y-23);
+  ctx.lineTo(97, y-14);
+  ctx.fill();
+  let a = 1.5 * Math.PI;
+  let b = 2.5 * Math.PI;
+  ctx.beginPath();
+  ctx.arc(111, y-15, 2, a, b);
+  ctx.stroke();
+  ctx.beginPath();
+  if (!muted) ctx.strokeStyle = 'orange';
+  ctx.arc(113, y-15, 4, a, b);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(115, y-15, 6, a, b);
+  ctx.stroke();
+  ctx.strokeStyle = 'grey';
 }
 
 function drawScore() {
-  drawSpeedButtons();
+  drawButtons();
 
   ctx.textAlign='center';
   ctx.fillStyle = 'white';
