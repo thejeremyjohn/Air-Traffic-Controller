@@ -736,7 +736,9 @@ class Emoji {
   nearlyCollidesWith(that) {
     var distance = distanceBetween(this, that) - 30;
     if ( distance < this.radius + that.radius ) {
-      return true;
+      if ( this.canCollide && that.canCollide ) {
+        return true;
+      }
     }
     return false;
   }
