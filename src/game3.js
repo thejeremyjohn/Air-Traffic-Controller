@@ -493,9 +493,6 @@ function handleProximity(i) {
       // input.onkeydown = handleEnter;
       // document.body.appendChild(input);
       // input.focus();
-      // while (!player) {
-      //   continue;
-      // }
       if (!scoreSaved) {
         player = prompt(
           `You scored ${score}. Enter your name (no spaces).`, player
