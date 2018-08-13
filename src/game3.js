@@ -24,7 +24,6 @@ function tick() {
         emojis[i].draw();
         if (emojis[i].wayOff()) {
           emojis.splice(i, 1);
-          // console.log('deleted wayOff emoji');
           emojis.push( spawnEmoji() );
         }
       }
