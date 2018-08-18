@@ -161,9 +161,6 @@ function sound(src, volume=1, _music=false) {
     this.sound.autoplay = true;
     this.sound.onended = () => this.play();
   }
-  // this.stop = function(){
-  //     this.sound.pause();
-  // };
 }
 
 // function playMusic() {
