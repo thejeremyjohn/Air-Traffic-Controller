@@ -328,10 +328,6 @@ function drawButtons() {
   ctx.strokeStyle = 'grey';
 
   // pause
-  // if (paused) {
-  //   console.log('paused')
-  //   ctx.fillStyle = 'orange';
-  // }
   ctx.fillRect(5, y-25, 10, 20);
   ctx.fillRect(20, y-25, 10, 20);
 
