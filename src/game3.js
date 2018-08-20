@@ -112,10 +112,9 @@ function writeHighScore(player, score) {
 }
 
 function getHighScores() {
-  // let scores;
   // database.orderByChild('score').limitToLast(10)
   //   .on('value', (data) => {
-  //     scores = Object.values(data.val()).reverse();
+  //     let scores = Object.values(data.val()).reverse();
   //   });
   // return scores;
   database.on('value', (data) => {
