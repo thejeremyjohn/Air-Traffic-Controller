@@ -108,7 +108,6 @@ function writeHighScore(player, score) {
   // database.orderByChild('score').on('child_added', function(data) {
   //   highscores.unshift(data.val());
   // });
-  // console.log(highscores);
 }
 
 function getHighScores() {
