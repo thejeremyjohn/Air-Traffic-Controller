@@ -161,19 +161,6 @@ function sound(src, volume=1, _music=false) {
   }
 }
 
-// function playMusic() {
-//   if (!music) {
-//     music = new sound("./sound/bensound-dreams.mp3");
-//     music.sound.volume = 0.35;
-//     music.sound.onended = () => {
-//       music.play();
-//     };
-//     music.play();
-//   } else {
-//     music.sound.playbackRate = 1;
-//   }
-// }
-
 function newGame() {
   database = firebase.database().ref();
   // if (!music) music.play();
