@@ -163,7 +163,6 @@ function sound(src, volume=1, _music=false) {
 
 function newGame() {
   database = firebase.database().ref();
-  // if (!music) music.play();
   scoreSaved = false;
   gameOver = false;
   ctx.canvas.removeEventListener("mousedown", newGame);
