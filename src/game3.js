@@ -56,7 +56,6 @@ document.addEventListener('DOMContentLoaded', () => {
   giggle = new sound("./sound/cute-giggle.wav");
 
   var collect = assetCollect(10);
-
   happy.onload = () => ( collect = collect() );
   worried.onload = () => ( collect = collect() );
   dead.onload = () => ( collect = collect() );
@@ -67,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
   eeung.sound.onprogress = () => ( collect = collect() );
   collision.sound.onprogress = () => ( collect = collect() );
   giggle.sound.onprogress = () => ( collect = collect() );
+
   emojiTypes = {
     regular: {
       faces: {happy, worried, dead, shocked},
