@@ -223,7 +223,6 @@ class LandingZone {
 //   console.log(`it does not collide`);
 //   return false;
 // }
-
 function play() {
   if (paused) {
     ticker = requestAnimationFrame(tick);
