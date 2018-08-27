@@ -392,6 +392,7 @@ function drawScore() {
   if (score >= 9 && score <= 10) {
     ctx.fillText( 'ENJOY :]', 20, 190 );
   }
+
   if (gameOver) {
     ctx.textAlign='center';
     ctx.fillStyle = 'black';
